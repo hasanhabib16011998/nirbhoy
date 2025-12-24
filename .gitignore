@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+env/
+venv/
+ENV/
+
+# Database
+*.sqlite3
+*.sqlite3-journal
+
+# Media and Static
+/media/
+/static/
+# If you want to keep the directory but not the files, use:
+# media/*
+# !media/.gitkeep
+
+# Django Secret Key & Settings
+.env
+local_settings.py
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
