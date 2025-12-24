@@ -9,8 +9,8 @@ venv/
 ENV/
 
 # Database
-*.sqlite3
-*.sqlite3-journal
+#*.sqlite3
+#*.sqlite3-journal
 
 # Media and Static
 /media/
