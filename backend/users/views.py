@@ -51,8 +51,8 @@ class LoginView(APIView):
                 role = user.groups.first().name if user.groups.exists() else "No Role"
 
                 return Response({
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                    "access_token": str(refresh.access_token),
                     "user_id": user.id,
                     "email": user.email,
                     "username": user.username,
