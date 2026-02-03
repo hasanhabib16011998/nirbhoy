@@ -26,6 +26,7 @@ export async function createUserAccount(user: INewUser) {
 
   export async function signInAccount(user: ISignInUser) {
     try {
+      console.log(user);
       const response = await fetch("http://127.0.0.1:8000/users/login/", {
         method: "POST",
         headers: {
@@ -40,8 +41,10 @@ export async function createUserAccount(user: INewUser) {
         // Handle 401 Unauthorized or other errors
         throw new Error(data.error || "Login failed");
       }
+      console.log(data);
   
       return data;
+      
     } catch (error) {
       console.log("Login API Error:", error);
       throw error;
