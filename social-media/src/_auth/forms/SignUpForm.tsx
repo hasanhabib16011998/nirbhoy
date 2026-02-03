@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Link,useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
@@ -18,14 +17,21 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { SignupValidation } from "@/lib/validation"
-import { createUserAccount } from "@/lib/appwrite/api"
+import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations"
+import { useUserContext } from "@/context/AuthContext"
 
 export default function SignUpForm() {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof SignupValidation>>({
+  const { mutateAsync: createUserAccount, isPending: isCreatingUser } = useCreateUserAccount();
+  const { mutateAsync: signInAccount, isPending: isSigningIn } = useSignInAccount();
+
+  // 1. Create a Type Alias for your form
+  type SignupFormValues = z.infer<typeof SignupValidation>;
+
+  // 2. Pass that Type to useForm
+  const form = useForm<SignupFormValues>({
     resolver: zodResolver(SignupValidation),
     defaultValues: {
       first_name: "",
@@ -38,36 +44,53 @@ export default function SignUpForm() {
     },
   });
  
-  // 2. Define a submit handler.
-  // 2. Submit Handler
-  async function onSubmit(values: z.infer<typeof SignupValidation>) {
-    setIsLoading(true);
-    
-    // Validation is already done by hook-form here. 
-    // We just pass the 'values' object to the API.
-    
+  // 3. Use that Type in your handler
+  async function onSubmit(values: SignupFormValues) {    
     try {
       const newUser = await createUserAccount(values);
 
       if (newUser) {
         toast.success("Account created successfully", {
-          description: "Please log in with your new credentials.",
+          description: "Logging In...",
         });
-        form.reset();
-        navigate("/sign-in");
+
+        // 4. Sign In
+        const session = await signInAccount({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (!session) {
+          toast.error("Sign In failed", {
+            description: "Please log in with your new credentials."
+          });
+          return;
+        }
+
+        // ---------------------------------------------------------
+        // ✅ CRITICAL: Save Token before checking auth!
+        // ---------------------------------------------------------
+        localStorage.setItem('accessToken', session.access_token);
+        localStorage.setItem('refreshToken', session.refresh_token);
+
+        // 5. Check Auth (Now that token is in localStorage, this will work)
+        const isLoggedIn = await checkAuthUser();
+        
+        if (isLoggedIn){
+          form.reset();
+          navigate('/');
+        } else {
+          toast.error("Login failed", {
+            description: "Please try again."
+          });
+        }
       }
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("Signup failed:", error);
-      
-      // ✅ Error Notification
-      // We try to parse the error message if the backend sent one, otherwise generic
       const errorMessage = error?.message || "Something went wrong. Please try again.";
-      
       toast.error("Registration Failed", {
           description: errorMessage,
       });
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -82,7 +105,7 @@ export default function SignUpForm() {
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full mt-4">
           
-          {/* First Name & Last Name */}
+          {/* Name Fields */}
           <div className="flex gap-4">
             <FormField
               control={form.control}
@@ -181,9 +204,9 @@ export default function SignUpForm() {
             )}
           />
 
-          <Button type="submit" className="shad-button_primary" disabled={isLoading}>
-            {isLoading ? (
-              <div className="flex-center gap-2">Loading...</div>
+          <Button type="submit" className="shad-button_primary" disabled={isCreatingUser || isSigningIn}>
+            {isCreatingUser || isSigningIn ? (
+              <div className="flex-center gap-2">Processing...</div>
             ) : (
               "Sign Up"
             )}

@@ -13,3 +13,7 @@ export const SignupValidation = z.object({
   is_anonymous_user: z.boolean().default(false),
 })
 
+export const SigninValidation = z.object({
+  email: z.string().email(),
+  password: z.string().min(8, { message: "Password is required" }),
+})

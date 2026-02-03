@@ -49,3 +49,8 @@ export type INavLink = {
     role: 'Survivor' | 'Lawyer' | 'Volunteer';
     is_anonymous_user: boolean;
   };
+
+  export type ISignInUser = {
+    email: string;
+    password: string;
+  }
