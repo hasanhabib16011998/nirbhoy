@@ -41,8 +41,11 @@ export type INavLink = {
   };
   
   export type INewUser = {
-    name: string;
+    first_name: string;
+    last_name: string;
     email: string;
-    username: string;
     password: string;
+    phone_number: string;
+    role: 'Survivor' | 'Lawyer' | 'Volunteer';
+    is_anonymous_user: boolean;
   };
