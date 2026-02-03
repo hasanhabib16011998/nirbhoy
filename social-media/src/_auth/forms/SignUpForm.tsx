@@ -5,6 +5,8 @@ import { z } from "zod"
 import { Link,useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
+
 import {
   Form,
   FormControl,
@@ -48,14 +50,22 @@ export default function SignUpForm() {
       const newUser = await createUserAccount(values);
 
       if (newUser) {
-        console.log("Success:", newUser);
+        toast.success("Account created successfully", {
+          description: "Please log in with your new credentials.",
+        });
         form.reset();
         navigate("/sign-in");
       }
-    } catch (error) {
+    } catch (error:any) {
       console.error("Signup failed:", error);
-      // Optional: You can set a manual error on a specific field if the backend returns specific field errors
-      // form.setError("email", { message: "Email already exists" }) 
+      
+      // ✅ Error Notification
+      // We try to parse the error message if the backend sent one, otherwise generic
+      const errorMessage = error?.message || "Something went wrong. Please try again.";
+      
+      toast.error("Registration Failed", {
+          description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
