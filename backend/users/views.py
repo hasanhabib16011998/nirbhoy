@@ -82,3 +82,20 @@ class UserProfileView(APIView):
             "role": role,
             "is_verified": user.is_verified,
         })
+    
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Get the refresh token from the request body
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            
+            # Blacklist the token (requires 'rest_framework_simplejwt.token_blacklist' in INSTALLED_APPS)
+            token.blacklist()
+
+            return Response({"message": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)

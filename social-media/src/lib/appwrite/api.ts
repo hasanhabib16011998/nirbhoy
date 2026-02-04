@@ -84,3 +84,38 @@ export async function createUserAccount(user: INewUser) {
       return null;
     }
   }
+
+  export async function signOutAccount() {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+  
+      // 1. If tokens exist, try to blacklist them on the backend
+      if (accessToken && refreshToken) {
+          await fetch("http://127.0.0.1:8000/users/logout/", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${accessToken}`, // We need auth to logout
+              },
+              body: JSON.stringify({ refresh_token: refreshToken }),
+          });
+      }
+  
+      // 2. CRITICAL: Always clear LocalStorage
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      
+      // Optional: Clear any other user data
+      localStorage.removeItem("user");
+  
+      return { success: true };
+      
+    } catch (error) {
+      console.log("Logout Error:", error);
+      // Even if backend fails, we must clear frontend storage to "log out" the user
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      return { success: false };
+    }
+  }
