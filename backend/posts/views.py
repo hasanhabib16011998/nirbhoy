@@ -1,9 +1,10 @@
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, parsers
+from rest_framework import status, parsers, generics
 from rest_framework.permissions import IsAuthenticated
 from .serializers import PostSerializer
+from .models import *
 
 class CreatePostView(APIView):
     permission_classes = [IsAuthenticated]
@@ -16,3 +17,10 @@ class CreatePostView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class RecentPostsView(generics.ListAPIView):
+    # Retrieve all posts, order by created_at descending (-), and take the first 20
+    queryset = Post.objects.all().order_by('-created_at')[:20]
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]

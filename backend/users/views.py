@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegistrationSerializer, LoginSerializer
+from .serializers import UserRegistrationSerializer, LoginSerializer, UserListSerializer
+from .models import *
 
 # 1. Registration APIView
 class RegisterView(APIView):
@@ -99,3 +100,21 @@ class LogoutView(APIView):
             return Response({"message": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class UserListView(generics.ListAPIView):
+    serializer_class = UserListSerializer
+    permission_classes = [IsAuthenticated] 
+
+    def get_queryset(self):
+        # 1. Order by creation date descending (newest first)
+        queryset = User.objects.all().order_by('-date_joined')
+        
+        # 2. Check for 'limit' parameter in the URL
+        limit = self.request.query_params.get('limit')
+        if limit:
+            try:
+                return queryset[:int(limit)]
+            except ValueError:
+                pass # If limit isn't a number, ignore it
+        
+        return queryset

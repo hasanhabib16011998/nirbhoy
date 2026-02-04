@@ -14,12 +14,12 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileUploaderProps) => {
   const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
 
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => { // ✅ Changed FileWithPath to File
+    (acceptedFiles: File[]) => {
       setFile(acceptedFiles);
       fieldChange(acceptedFiles);
       setFileUrl(convertFileToUrl(acceptedFiles[0]));
     },
-    [file]
+    [fieldChange] // ✅ Correct dependency
   );
 
   const { getRootProps, getInputProps } = useDropzone({

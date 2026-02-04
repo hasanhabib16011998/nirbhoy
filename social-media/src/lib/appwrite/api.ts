@@ -163,3 +163,66 @@ export async function createPost(post: INewPost) {
     throw error;
   }
 }
+
+export async function getRecentPosts() {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    // NOTE: If you made the view public (AllowAny), you can remove the headers.
+    const response = await fetch("http://127.0.0.1:8000/posts/recent/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, 
+      },
+    });
+
+    if (!response.ok) {
+       throw new Error("Failed to fetch posts");
+    }
+
+    const data = await response.json();
+    console.log(data);
+    
+    // Django REST Framework returns the array directly (or inside 'results' if using pagination)
+    // If you used generics.ListAPIView without pagination, it's just the array.
+    return { documents: data }; 
+
+  } catch (error) {
+    console.log("Get Recent Posts Error:", error);
+    return null;
+  }
+}
+
+export async function getUsers(limit?: number) {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    // 1. Construct URL with query parameter if limit exists
+    let url = "http://127.0.0.1:8000/users/list/";
+    if (limit) {
+      url += `?limit=${limit}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+       throw new Error("Failed to fetch users");
+    }
+
+    const data = await response.json();
+    
+    // 2. Wrap in 'documents' to match your Home.tsx structure
+    return { documents: data }; 
+
+  } catch (error) {
+    console.log("Get Users Error:", error);
+    return null; // Return null so React Query knows it failed
+  }
+}
