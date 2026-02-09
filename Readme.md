@@ -85,7 +85,7 @@ python manage.py runserver 0.0.0.0:8000
 
 Notes:
 - If you use PostgreSQL or another DB in `DATABASE_URL`, ensure the DB is up and `psycopg2` is installed.
-- If you need CORS support, ensure `django-cors-headers` is installed and configured; set `CORS_ALLOWED_ORIGINS` to include `http://localhost:3000`.
+- If you need CORS support, ensure `django-cors-headers` is installed and configured; set `CORS_ALLOWED_ORIGINS` to include `http://localhost:5173`.
 
 ---
 
@@ -133,8 +133,6 @@ cd social-media
 npm run dev
 ```
 
-```
-
 ---
 
 
@@ -146,4 +144,3 @@ npm run dev
 - Database connection errors: verify `DATABASE_URL` and DB credentials; ensure DB server is reachable.
 - Missing dependencies: re-install (`npm install`, `pip install -r requirements.txt`) and ensure virtualenv is activated.
 
----
