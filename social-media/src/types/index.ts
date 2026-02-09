@@ -58,7 +58,7 @@ export type ISignInUser = {
 export type IPost = {
   id: string;
   caption: string;
-  imageUrl: string;
+  image: string;
   location: string;
   tags: string;
   likes: number[];

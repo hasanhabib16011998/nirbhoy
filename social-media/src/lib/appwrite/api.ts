@@ -194,6 +194,33 @@ export async function getRecentPosts() {
   }
 }
 
+export async function getPostById(postId?: string) {
+  if (!postId) return null;
+
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    const response = await fetch(`http://127.0.0.1:8000/posts/${postId}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+       throw new Error("Failed to fetch post");
+    }
+
+    const data = await response.json();
+    return data; // Returns the single Post object
+
+  } catch (error) {
+    console.log("Get Post By ID Error:", error);
+    return null;
+  }
+}
+
 export async function getUsers(limit?: number) {
   try {
     const token = localStorage.getItem("accessToken");
@@ -226,6 +253,7 @@ export async function getUsers(limit?: number) {
     return null; // Return null so React Query knows it failed
   }
 }
+
 
 // 1. LIKE POST
 export async function likePost(postId: string, likesArray: string[]) {
@@ -268,5 +296,35 @@ export async function savePost(postId: string) {
   } catch (error) {
     console.log("Save Error:", error);
     throw error;
+  }
+}
+
+export async function getUserPosts(userId: number) {
+  if (!userId) return null;
+
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    const response = await fetch(`http://127.0.0.1:8000/posts/user/${userId}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+       throw new Error("Failed to fetch user posts");
+    }
+
+    const data = await response.json();
+    
+    // Wrap in 'documents' to match your existing app structure if needed, 
+    // otherwise just return 'data'
+    return { documents: data }; 
+
+  } catch (error) {
+    console.log("Get User Posts Error:", error);
+    return null;
   }
 }

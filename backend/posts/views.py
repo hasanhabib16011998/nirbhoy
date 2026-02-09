@@ -76,3 +76,26 @@ class UserSavedPostsView(generics.ListAPIView):
 
     def get_queryset(self):
         return SavedPost.objects.filter(user=self.request.user).order_by('-created_at')
+    
+class PostDetailView(generics.RetrieveAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    # Crucial: Pass 'request' context so the serializer can calculate 'is_saved'
+    def get_serializer_context(self):
+        return {'request': self.request}
+    
+class UserPostsView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # 1. Get the user ID from the URL parameter (we'll name it 'uid' in urls.py)
+        user_id = self.kwargs['uid']
+        # 2. Filter posts by this author and order by newest first
+        return Post.objects.filter(author__id=user_id).order_by('-created_at')
+
+    def get_serializer_context(self):
+        # Ensure the serializer has context to check 'is_saved' and 'likes'
+        return {'request': self.request}
