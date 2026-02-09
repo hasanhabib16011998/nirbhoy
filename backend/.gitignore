@@ -13,8 +13,6 @@ ENV/
 #*.sqlite3-journal
 
 # Media and Static
-/media/
-/static/
 # If you want to keep the directory but not the files, use:
 # media/*
 # !media/.gitkeep
