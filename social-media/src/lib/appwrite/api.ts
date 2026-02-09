@@ -226,3 +226,47 @@ export async function getUsers(limit?: number) {
     return null; // Return null so React Query knows it failed
   }
 }
+
+// 1. LIKE POST
+export async function likePost(postId: string, likesArray: string[]) {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    // We use PATCH or PUT because we are updating a specific field
+    const response = await fetch(`http://127.0.0.1:8000/posts/${postId}/like/`, {
+      method: "PUT", 
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      // We send the array to the backend
+      body: JSON.stringify({ likes: likesArray }),
+    });
+
+    if (!response.ok) throw new Error("Failed to like post");
+    return await response.json();
+  } catch (error) {
+    console.log("Like Post Error:", error);
+    throw error;
+  }
+}
+
+// 2. SAVE POST (Handles both Save and Delete/Unsave)
+export async function savePost(postId: string) {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch(`http://127.0.0.1:8000/posts/${postId}/save/`, {
+      method: "POST", // POST is used for toggling
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to save post");
+    return await response.json();
+  } catch (error) {
+    console.log("Save Error:", error);
+    throw error;
+  }
+}

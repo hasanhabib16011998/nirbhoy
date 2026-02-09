@@ -61,6 +61,8 @@ export type IPost = {
   imageUrl: string;
   location: string;
   tags: string;
+  likes: number[];
+  is_saved: boolean;
   author: IUser;
   created_at: string;
 };
