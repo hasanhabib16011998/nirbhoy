@@ -328,3 +328,60 @@ export async function getUserPosts(userId: number) {
     return null;
   }
 }
+
+export async function getUserById(userId?: string) {
+  // 1. validation: Don't make a request if ID is missing
+  if (!userId) return null;
+
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    // 2. Call the Django backend
+    const response = await fetch(`http://127.0.0.1:8000/users/${userId}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch user");
+    }
+
+    // 3. Return the JSON (It will contain: id, name, bio, posts, etc.)
+    return await response.json();
+
+  } catch (error) {
+    console.log("Get User By ID Error:", error);
+    return null;
+  }
+}
+
+export async function getSavedPosts() {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    // NOTE: If you made the view public (AllowAny), you can remove the headers.
+    const response = await fetch("http://127.0.0.1:8000/posts/saved/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, 
+      },
+    });
+
+    if (!response.ok) {
+       throw new Error("Failed to fetch posts");
+    }
+
+    const data = await response.json();
+    console.log(data);
+    
+    return data;
+
+  } catch (error) {
+    console.log("Get Recent Posts Error:", error);
+    return null;
+  }
+}

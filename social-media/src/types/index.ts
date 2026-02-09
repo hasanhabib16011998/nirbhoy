@@ -66,3 +66,10 @@ export type IPost = {
   author: IUser;
   created_at: string;
 };
+
+export type ISavedPost = {
+  id: number;          // The ID of the SavedPost record itself
+  user: number;        // The ID of the user who saved it
+  post: IPost;         // The full nested Post object (because your serializer nests it)
+  created_at: string;  // Date string
+};

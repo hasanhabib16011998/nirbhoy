@@ -99,3 +99,10 @@ class UserPostsView(generics.ListAPIView):
     def get_serializer_context(self):
         # Ensure the serializer has context to check 'is_saved' and 'likes'
         return {'request': self.request}
+    
+class UserSavedPostsView(generics.ListAPIView):
+    serializer_class = SavedPostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return SavedPost.objects.filter(user=self.request.user).order_by('-created_at')

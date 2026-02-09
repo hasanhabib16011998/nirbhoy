@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from .models import User, LawyerProfile
 import random
 import string
+from posts.serializers import PostSerializer
 
 # Registration Serializer
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -79,3 +80,67 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'date_joined']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    # 1. Nest the posts so the frontend can count them
+    posts = PostSerializer(many=True, read_only=True)
+
+    # 2. Add fields expected by your React Profile component
+    name = serializers.SerializerMethodField()
+    imageUrl = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
+    
+    # 3. Add placeholders for followers (until you implement that feature)
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        # The frontend gets this exact JSON structure
+        fields = [
+            'id', 'username', 'email', 
+            'name', 'imageUrl', 'bio', 
+            'posts', 'followers_count', 'following_count',
+            'is_verified'
+        ]
+
+    def get_name(self, obj):
+        # Return "First Last" or fallback to Username
+        full_name = f"{obj.first_name} {obj.last_name}".strip()
+        return full_name if full_name else obj.username
+
+    def get_imageUrl(self, obj):
+        # Return None so frontend uses the default placeholder image
+        return None 
+
+    def get_bio(self, obj):
+        """
+        Dynamically generate the Bio based on the User's Django Group.
+        """
+        # Get list of group names this user belongs to
+        groups = obj.groups.values_list('name', flat=True)
+
+        if 'Lawyer' in groups:
+            # Check if they actually have a profile created to avoid crashes
+            if hasattr(obj, 'lawyer_profile'):
+                return f"Advocate | {obj.lawyer_profile.specialization}"
+            return "Advocate"
+        
+        elif 'Survivor' in groups:
+            return "Survivor Community Member"
+        
+        elif 'Volunteer' in groups:
+            return "Verified Volunteer"
+        
+        elif 'Admin' in groups or obj.is_staff:
+            return "Community Administrator"
+
+        # Default fallback for users with no group
+        return "Community Member"
+
+    def get_followers_count(self, obj):
+        return 0 
+
+    def get_following_count(self, obj):
+        return 0

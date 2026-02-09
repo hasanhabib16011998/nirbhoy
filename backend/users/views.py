@@ -4,7 +4,7 @@ from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegistrationSerializer, LoginSerializer, UserListSerializer
+from .serializers import UserRegistrationSerializer, LoginSerializer, UserListSerializer, UserProfileSerializer
 from .models import *
 
 # 1. Registration APIView
@@ -118,3 +118,13 @@ class UserListView(generics.ListAPIView):
                 pass # If limit isn't a number, ignore it
         
         return queryset
+    
+class UserDetailView(generics.RetrieveAPIView):
+    # This acts as the "Pool" of users we can search in.
+    queryset = User.objects.all()
+    
+    # This serializer ensures the group logic & nested posts are applied
+    serializer_class = UserProfileSerializer
+    
+    # Only logged-in users can view profiles
+    permission_classes = [IsAuthenticated]

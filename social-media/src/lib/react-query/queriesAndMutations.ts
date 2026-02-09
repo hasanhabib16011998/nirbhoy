@@ -5,7 +5,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-import { createUserAccount, signInAccount, signOutAccount, createPost, getRecentPosts,getPostById, getUsers, likePost, savePost, getCurrentUser, getUserPosts } from '../appwrite/api';
+import { createUserAccount, signInAccount, signOutAccount, createPost, getRecentPosts,getPostById, getUsers, likePost, savePost, getCurrentUser, getUserPosts, getUserById ,getSavedPosts } from '../appwrite/api';
 import { type INewUser } from '@/types';
 import { type INewPost } from '@/types';
 
@@ -108,6 +108,13 @@ export const useGetUserPosts = (userId?: number) => {
   });
 };
 
+export const useGetSavedPosts = () => {
+  return useQuery({
+    queryKey: ['getSavedPosts'],
+    queryFn: () => getSavedPosts(),
+  });
+};
+
 export const useDeleteSavedPost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -123,5 +130,13 @@ export const useDeleteSavedPost = () => {
         queryKey: ['getCurrentUser'],
       })
     },
+  });
+};
+
+export const useGetUserById = (userId?: string) => {
+  return useQuery({
+    queryKey: ['getUserById', userId],
+    queryFn: () => getUserById(userId),
+    enabled: !!userId,
   });
 };
