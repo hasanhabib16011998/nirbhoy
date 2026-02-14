@@ -15,7 +15,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'caption', 'image', 'location', 'tags', 'likes', 'is_saved', 'created_at', 'updated_at']
+        fields = ['id', 'author', 'caption', 'image', 'location','is_verified', 'tags', 'likes', 'is_saved', 'created_at', 'updated_at']
 
     def get_is_saved(self, obj):
         request = self.context.get('request')

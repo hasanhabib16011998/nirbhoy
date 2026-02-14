@@ -22,7 +22,7 @@ class CreatePostView(APIView):
 
 class RecentPostsView(generics.ListAPIView):
     # Retrieve all posts, order by created_at descending (-), and take the first 20
-    queryset = Post.objects.all().order_by('-created_at')[:20]
+    queryset = Post.objects.filter(is_verified=True).order_by('-created_at')[:20]
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
 
