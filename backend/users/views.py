@@ -66,7 +66,7 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserProfileView(APIView):
-    permission_classes = [IsAuthenticated] # ✅ Only logged-in users can access this
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -116,6 +116,27 @@ class UserListView(generics.ListAPIView):
                 return queryset[:int(limit)]
             except ValueError:
                 pass # If limit isn't a number, ignore it
+        
+        return queryset
+    
+class UserListByGroupView(generics.ListAPIView):
+    serializer_class = UserListSerializer
+    permission_classes = [IsAuthenticated] 
+
+    def get_queryset(self):
+        queryset = User.objects.all().order_by('-date_joined')
+        
+        # Filter by Group Name
+        group_name = self.request.query_params.get('group')
+        if group_name:
+            queryset = queryset.filter(groups__name__iexact=group_name)
+        
+        limit = self.request.query_params.get('limit')
+        if limit:
+            try:
+                return queryset[:int(limit)]
+            except ValueError:
+                pass
         
         return queryset
     

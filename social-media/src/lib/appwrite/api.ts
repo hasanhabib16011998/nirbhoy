@@ -254,6 +254,34 @@ export async function getUsers(limit?: number) {
   }
 }
 
+export async function getUsersByGroup(limit?: number, group?: string) {
+  try {
+      const token = localStorage.getItem("accessToken");
+      
+      // Construct URL with multiple query parameters
+      const url = new URL("http://127.0.0.1:8000/users/group/");
+      if (limit) url.searchParams.append("limit", limit.toString());
+      if (group) url.searchParams.append("group", group);
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch users");
+
+      const data = await response.json();
+      return { documents: data }; 
+
+    } catch (error) {
+      console.log("Get Users Error:", error);
+      return null;
+    }
+}
+
 
 // 1. LIKE POST
 export async function likePost(postId: string, likesArray: string[]) {
