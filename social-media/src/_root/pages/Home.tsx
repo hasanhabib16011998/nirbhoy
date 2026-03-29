@@ -3,7 +3,7 @@ import Loader from "@/components/shared/Loader";
 import PostCard from "@/components/shared/PostCard";
 import UserCard from "@/components/shared/UserCard";
 import { type IPost, type IUser } from "@/types";
-import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queriesAndMutations";
+import { useGetRecentPosts, useGetUsersByGroup } from "@/lib/react-query/queriesAndMutations";
 
 const Home = () => {
   // const { toast } = useToast();
@@ -13,13 +13,21 @@ const Home = () => {
     isLoading: isPostLoading,
     isError: isErrorPosts,
   } = useGetRecentPosts();
-  const {
-    data: creators,
-    isLoading: isUserLoading,
-    isError: isErrorCreators,
-  } = useGetUsers(10);
+  // Fetch Volunteers
+  const { 
+    data: volunteers, 
+    isLoading: isVolunteersLoading,
+    isError: isErrorVoluneers,
+  } = useGetUsersByGroup(5, "Volunteer");
 
-  if (isErrorPosts || isErrorCreators) {
+  // Fetch Lawyers
+  const { 
+    data: lawyers, 
+    isLoading: isLawyersLoading,
+    isError: isErrorLawyers, 
+  } = useGetUsersByGroup(5, "Lawyer");
+
+  if (isErrorPosts || isErrorVoluneers || isErrorLawyers) {
     return (
       <div className="flex flex-1">
         <div className="home-container">
@@ -52,19 +60,30 @@ const Home = () => {
       </div>
 
       <div className="home-creators">
-        <h3 className="h3-bold text-light-1">Top Creators</h3>
-        {isUserLoading && !creators ? (
-          <Loader />
-        ) : (
-          <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.documents.map((creator: IUser) => (
-              <li key={creator?.id}>
-                <UserCard user={creator} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              {/* VOLUNTEERS SECTION */}
+              <h3 className="h3-bold text-light-1">Top Volunteers</h3>
+              {isVolunteersLoading && !volunteers ? (
+                <Loader />
+              ) : (
+                <ul className="grid gap-6 mb-10">
+                  {volunteers?.documents.map((user: IUser) => (
+                    <li key={user.id}><UserCard user={user} /></li>
+                  ))}
+                </ul>
+              )}
+
+              {/* LAWYERS SECTION */}
+              <h3 className="h3-bold text-light-1">Verified Lawyers</h3>
+              {isLawyersLoading && !lawyers ? (
+                <Loader />
+              ) : (
+                <ul className="grid gap-6">
+                  {lawyers?.documents.map((user: IUser) => (
+                    <li key={user.id}><UserCard user={user} /></li>
+                  ))}
+                </ul>
+              )}
+            </div>
     </div>
   );
 };

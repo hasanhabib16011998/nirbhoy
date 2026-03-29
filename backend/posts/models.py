@@ -6,6 +6,7 @@ class Post(models.Model):
     caption = models.TextField()
     image = models.ImageField(upload_to='post_images/') 
     location = models.CharField(max_length=255, blank=True)
+    is_verified = models.BooleanField(default=False)
     tags = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

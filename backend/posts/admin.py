@@ -4,10 +4,10 @@ from .models import Post
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     # Columns to show in the list view
-    list_display = ('id', 'author', 'short_caption', 'location', 'created_at')
+    list_display = ('id', 'author', 'short_caption','is_verified', 'location', 'created_at')
     
     # Add filters to the right sidebar
-    list_filter = ('created_at', 'updated_at')
+    list_filter = ('is_verified', 'created_at', 'updated_at')
     
     # Add a search bar
     search_fields = ('caption', 'author__username', 'location')

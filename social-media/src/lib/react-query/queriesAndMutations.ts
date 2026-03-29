@@ -5,7 +5,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-import { createUserAccount, signInAccount, signOutAccount, createPost, getRecentPosts,getPostById, getUsers, likePost, savePost, getCurrentUser, getUserPosts, getUserById ,getSavedPosts } from '../appwrite/api';
+import { createUserAccount, signInAccount, signOutAccount, createPost, getRecentPosts,getPostById, getUsers, likePost, savePost, getCurrentUser, getUserPosts, getUserById ,getSavedPosts, getUsersByGroup } from '../appwrite/api';
 import { type INewUser } from '@/types';
 import { type INewPost } from '@/types';
 
@@ -50,6 +50,13 @@ export const useGetUsers = (limit?: number) => {
   return useQuery({
     queryKey: ['getUsers'],
     queryFn: () => getUsers(limit),
+  });
+};
+
+export const useGetUsersByGroup = (limit?: number, group?: string) => {
+  return useQuery({
+    queryKey: ['getUsersByGroup', group, limit],
+    queryFn: () => getUsersByGroup(limit, group),
   });
 };
 
