@@ -1,18 +1,18 @@
 import AuthLayout from './_auth/AuthLayout';
 import SignInForm from './_auth/forms/SignInForm';
 import SignUpForm from './_auth/forms/SignUpForm';
-// import {
-//   Home,
-//   Explore,
-//   Saved,
-//   CreatePost,
-//   Profile,
-//   EditPost,
-//   PostDetails,
-//   UpdateProfile,
-//   AllUsers,
-// } from "@/_root/pages";
-//import RootLayout from './_root/RootLayout';
+import {
+  Home,
+  Explore,
+  Saved,
+  CreatePost,
+  Profile,
+  EditPost,
+  PostDetails,
+  UpdateProfile,
+  AllUsers,
+} from "@/_root/pages";
+import RootLayout from './_root/RootLayout';
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from "@/components/ui/sonner"
@@ -29,7 +29,7 @@ const App = () => {
           </Route>
 
             {/* private routes */}
-            {/* <Route element={<RootLayout/>}>
+            <Route element={<RootLayout/>}>
             <Route index element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/saved" element={<Saved />} />
@@ -39,7 +39,7 @@ const App = () => {
             <Route path="/posts/:id" element={<PostDetails />} />
             <Route path="/profile/:id/*" element={<Profile />} />
             <Route path="/update-profile/:id" element={<UpdateProfile />} />
-            </Route> */}
+            </Route>
         </Routes>
         <Toaster position="top-center"/>
     </main>
