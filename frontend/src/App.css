@@ -106,7 +106,7 @@
   }
 
   body {
-    @apply min-h-screen font-inter bg-background text-foreground;
+    @apply min-h-screen font-inter bg-dark-1 text-white;
   }
   html {
     @apply font-sans;
