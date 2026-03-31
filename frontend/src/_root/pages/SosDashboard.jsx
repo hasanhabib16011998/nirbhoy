@@ -1,14 +1,65 @@
 // src/pages/SosDashboard.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
+
+// --- NEW LEAFLET IMPORTS ---
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// --- FIX FOR LEAFLET DEFAULT ICONS IN REACT ---
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
 
 const SosDashboard = () => {
   const { user } = useUserContext();
   const navigate = useNavigate();
+  
   const [isTracking, setIsTracking] = useState(false);
   const [watchId, setWatchId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [backendResponse, setBackendResponse] = useState(""); 
+  
+  // NEW STATE: Store the exact coordinates for the map
+  const [currentLocation, setCurrentLocation] = useState(null);
+
+  const hasTriggeredBackend = useRef(false);
+
+  const sendInitialSosToBackend = async (latitude, longitude) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+      const response = await fetch(`${API_BASE_URL}/complains/trigger/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          latitude: latitude,
+          longitude: longitude,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to broadcast to server.");
+      }
+
+      setBackendResponse(data.message);
+      
+    } catch (error) {
+      console.error("Backend SOS error:", error);
+      setErrorMsg(error.message);
+    }
+  };
 
   const startEmergency = () => {
     if (!("geolocation" in navigator)) {
@@ -18,12 +69,25 @@ const SosDashboard = () => {
 
     setIsTracking(true);
     setErrorMsg("");
+    setBackendResponse("");
+    hasTriggeredBackend.current = false; 
 
     const id = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log(`EMERGENCY LIVE: Lat ${latitude}, Lng ${longitude}`);
-        // TODO: Mutate/Send this data to your backend immediately
+        
+        // 1. Format coordinates for Django
+        const formattedLat = parseFloat(latitude.toFixed(6));
+        const formattedLng = parseFloat(longitude.toFixed(6));
+
+        // 2. Update state so the Map can render the pin!
+        setCurrentLocation({ lat: formattedLat, lng: formattedLng });
+        
+        // 3. Send to backend once
+        if (!hasTriggeredBackend.current) {
+          hasTriggeredBackend.current = true;
+          sendInitialSosToBackend(formattedLat, formattedLng);
+        }
       },
       (error) => {
         console.error("Location error:", error);
@@ -42,10 +106,11 @@ const SosDashboard = () => {
       setWatchId(null);
     }
     setIsTracking(false);
-    // TODO: Send a "Safe" signal to your backend
+    hasTriggeredBackend.current = false;
+    setBackendResponse("");
+    setCurrentLocation(null); // Clear map data
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
@@ -64,24 +129,55 @@ const SosDashboard = () => {
         </div>
 
         {errorMsg && <p className="text-red-500 body-bold">{errorMsg}</p>}
+        
+        {backendResponse && (
+          <div className="bg-green-500/10 border border-green-500 p-4 rounded-lg w-full">
+            <p className="text-green-500 body-bold">{backendResponse}</p>
+          </div>
+        )}
+
+        {/* MAP COMPONENT - Renders only when coordinates exist */}
+        {currentLocation && isTracking && (
+          <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)] z-0">
+            <MapContainer 
+              center={[currentLocation.lat, currentLocation.lng]} 
+              zoom={16} 
+              scrollWheelZoom={false} 
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={[currentLocation.lat, currentLocation.lng]}>
+                <Popup>
+                  You are broadcasting from here.
+                </Popup>
+              </Marker>
+            </MapContainer>
+          </div>
+        )}
 
         {!isTracking ? (
           <button
             onClick={startEmergency}
-            className="w-64 h-64 rounded-full bg-red-600 border-8 border-red-900 shadow-[0_0_40px_rgba(220,38,38,0.5)] flex items-center justify-center transition-transform active:scale-95"
+            className="w-64 h-64 rounded-full bg-red-600 border-8 border-red-900 shadow-[0_0_40px_rgba(220,38,38,0.5)] flex items-center justify-center transition-transform active:scale-95 z-10"
           >
             <span className="h1-bold text-white">TAP TO<br/>BROADCAST</span>
           </button>
         ) : (
-          <div className="flex flex-col items-center gap-6">
-            <div className="w-64 h-64 rounded-full bg-dark-4 border-8 border-red-500 shadow-[0_0_60px_rgba(220,38,38,0.8)] flex flex-col items-center justify-center animate-pulse">
-              <span className="h2-bold text-red-500">LIVE</span>
-              <span className="body-medium text-light-1 mt-2">Broadcasting...</span>
+          <div className="flex flex-col items-center gap-6 w-full z-10 mt-4">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-4 w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+              </span>
+              <span className="body-bold text-red-500">LIVE BROADCASTING...</span>
             </div>
             
             <button
               onClick={stopEmergency}
-              className="px-8 py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
+              className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
             >
               I am Safe (Stop SOS)
             </button>
@@ -90,7 +186,7 @@ const SosDashboard = () => {
 
         <button 
           onClick={() => navigate(-1)}
-          className="mt-8 text-light-3 hover:text-light-1 underline"
+          className="mt-4 text-light-3 hover:text-light-1 underline"
         >
           Return to App
         </button>
