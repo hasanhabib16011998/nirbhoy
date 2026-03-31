@@ -19,6 +19,7 @@ const INITIAL_STATE = {
   setUser: () => {},
   setIsAuthenticated: () => {},
   checkAuthUser: async () => false,
+  logout: () => {},
 };
 
 const AuthContext = createContext(INITIAL_STATE);
@@ -59,6 +60,13 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    setUser(INITIAL_USER);
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
     // ✅ FIX: Only try to restore the session if a token exists.
     // Do NOT redirect here. Let your Router/Layout handle redirects.
@@ -76,6 +84,7 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     setIsAuthenticated,
     checkAuthUser,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

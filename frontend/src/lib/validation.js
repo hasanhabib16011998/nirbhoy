@@ -17,7 +17,7 @@ export const SignupValidation = z.object({
 
 export const PostValidation = z.object({
   caption: z.string().min(5, "Caption too short").max(2200, "Caption too long"),
-  file: z.custom(file => file instanceof File, "File is required"),
+  file: z.custom((files) => files && files.length > 0, "File is required"),
   location: z.string(),
   tags: z.string(),
 });
