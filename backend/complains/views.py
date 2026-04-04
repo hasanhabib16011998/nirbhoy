@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .models import SosAlert
 from .serializers import SosAlertSerializer
@@ -25,3 +26,27 @@ class ReceiveSosAPIView(APIView):
             )
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ActiveSosListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Only fetch alerts where is_active is True, newest first
+        active_alerts = SosAlert.objects.filter(is_active=True).order_by('-timestamp')
+        serializer = SosAlertSerializer(active_alerts, many=True)
+        return Response(serializer.data)
+
+# View to mark a specific alert as resolved
+class ResolveSosAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        # Find the alert by its ID
+        alert = get_object_or_404(SosAlert, pk=pk, is_active=True)
+        
+        # Mark it as resolved
+        alert.is_active = False
+        alert.save()
+        
+        return Response({"message": "Emergency marked as resolved."})
