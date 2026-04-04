@@ -28,7 +28,11 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(INITIAL_USER);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // ✅ Start loading immediately if a token exists in storage.
+  // This tells RootLayout to show the Loader and wait, instead of redirecting.
+  const [isLoading, setIsLoading] = useState(() => {
+    return localStorage.getItem("accessToken") ? true : false;
+  });
 
   const checkAuthUser = async () => {
     setIsLoading(true);
