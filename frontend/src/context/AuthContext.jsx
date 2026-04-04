@@ -10,6 +10,8 @@ export const INITIAL_USER = {
   email: "",
   imageUrl: "",
   bio: "",
+  role: "",
+  isVerified: false
 };
 
 const INITIAL_STATE = {
@@ -49,6 +51,8 @@ export function AuthProvider({ children }) {
           // Use empty string as fallback if backend doesn't send these yet
           imageUrl: currentAccount.imageUrl || "", 
           bio: currentAccount.bio || "",
+          role: currentAccount.role || "Survivor",
+          isVerified: currentAccount.is_verified || false,
         });
         
         setIsAuthenticated(true);
