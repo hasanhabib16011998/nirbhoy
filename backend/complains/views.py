@@ -50,3 +50,19 @@ class ResolveSosAPIView(APIView):
         alert.save()
         
         return Response({"message": "Emergency marked as resolved."})
+    
+
+class RespondSosAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        # Find the active alert
+        alert = get_object_or_404(SosAlert, pk=pk, is_active=True)
+        
+        # Add the logged-in volunteer to the responders list
+        alert.responders.add(request.user)
+        
+        return Response(
+            {"message": "You have been marked as responding to this emergency."},
+            status=status.HTTP_200_OK
+        )
