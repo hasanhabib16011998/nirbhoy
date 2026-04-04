@@ -3,7 +3,7 @@ import SignInForm from './_auth/forms/SignInForm';
 import SignUpForm from './_auth/forms/SignUpForm';
 import {
   Home,
-  Explore,
+  Dashboard,
   Saved,
   CreatePost,
   Profile,
@@ -32,7 +32,7 @@ const App = () => {
             {/* private routes */}
             <Route element={<RootLayout/>}>
             <Route index element={<Home />} />
-            <Route path="/explore" element={<Explore />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/saved" element={<Saved />} />
             <Route path="/all-users" element={<AllUsers />} />
             <Route path="/create-post" element={<CreatePost />} />
