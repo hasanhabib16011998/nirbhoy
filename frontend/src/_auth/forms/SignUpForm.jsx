@@ -197,6 +197,16 @@ export default function SignUpForm() {
             Log in
           </Link>
         </p>
+
+        <div className="mt-6 mb-6 border-t border-dark-4 pt-4 text-center w-full">
+          <p className="text-small-regular text-light-2">Want to help the community?</p>
+          <Link
+            to="/pro-sign-up"
+            className="text-secondary-500 text-small-semibold hover:underline"
+          >
+            Register as a Volunteer/Lawyer
+          </Link>
+        </div>
       </form>
     </div>
   )

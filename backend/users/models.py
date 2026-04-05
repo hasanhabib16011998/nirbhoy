@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     is_anonymous_user = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
@@ -16,7 +18,15 @@ class User(AbstractUser):
 class LawyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lawyer_profile')
     bar_council_id = models.CharField(max_length=50, unique=True)
-    specialization = models.CharField(max_length=100)
+    bar_council_id_image = models.ImageField(upload_to='lawyer_docs/')
+    specialization = models.CharField(max_length=100, default="General")
 
     def __str__(self):
         return f"Advocate {self.user.last_name}"
+    
+class VolunteerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='volunteer_profile')
+    nid_image = models.ImageField(upload_to='volunteer_docs/')
+
+    def __str__(self):
+        return f"Volunteer {self.user.last_name}"

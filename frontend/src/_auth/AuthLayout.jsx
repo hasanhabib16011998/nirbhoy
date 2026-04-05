@@ -8,7 +8,7 @@ const AuthLayout = () => {
         <Navigate to='/'/>
       ):(
         <>
-        <section className="flex flex-1 justify-center items-center flex-col py-10 px-10">
+        <section className="flex flex-1 items-center flex-col py-10 overflow-y-auto custom-scrollbar">
           <Outlet/>
         </section>
 

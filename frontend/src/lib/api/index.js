@@ -24,6 +24,26 @@ export async function createUserAccount(user) {
   }
 }
 
+export async function createProfessionalAccount(formData) {
+  try {    
+    const response = await fetch(`${API_BASE_URL}/users/register-pro/`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(JSON.stringify(data));
+    }
+
+    return data;
+  } catch (error) {
+    console.log("Pro API Error:", error);
+    throw error;
+  }
+}
+
 export async function signInAccount(user) {
   try {
     console.log(user);

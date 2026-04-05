@@ -1,39 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth.models import Group
-from .models import User, LawyerProfile
+from .models import User, LawyerProfile, VolunteerProfile
 import random
 import string
 from posts.serializers import PostSerializer
 
 # Registration Serializer
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(write_only=True)
-    bar_council_id = serializers.CharField(write_only=True, required=False)
-    specialization = serializers.CharField(write_only=True, required=False)
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number', 'role', 'is_anonymous_user', 'bar_council_id', 'specialization']
-
-    def validate(self, data):
-        role = data.get('role')
-        valid_roles = ['Survivor', 'Lawyer', 'Volunteer', 'Admin']
-        if role not in valid_roles:
-            raise serializers.ValidationError({"role": f"Invalid role. Choose from: {valid_roles}"})
-
-        if role == 'Lawyer' and not data.get('bar_council_id'):
-            raise serializers.ValidationError({"bar_council_id": "Bar Council ID is required for Lawyers."})
-
-        return data
+        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number', 'is_anonymous_user']
 
     def create(self, validated_data):
-        role_name = validated_data.pop('role')
-        bar_id = validated_data.pop('bar_council_id', None)
-        spec = validated_data.pop('specialization', None)
         password = validated_data.pop('password')
-
-        # 1. Handle Username
+        
+        # Handle Anonymous Username logic
         if validated_data.get('is_anonymous_user', False):
             suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
             validated_data['username'] = f"user_{suffix}"
@@ -42,32 +25,73 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         else:
             validated_data['username'] = validated_data['email'].split('@')[0]
 
-        # 2. Create User
+        # Create normal user
         user = User(**validated_data)
         user.set_password(password)
-        
-        # 3. Verification Logic
-        if role_name in ['Lawyer', 'Volunteer']:
-            user.is_verified = False
-        else:
-            user.is_verified = True
-        
+        user.is_verified = True # Normal users are verified by default
         user.save()
 
-        # 4. Group Assignment
+        # Default to Survivor role
+        try:
+            group = Group.objects.get(name='Survivor')
+            user.groups.add(group)
+        except Group.DoesNotExist:
+            pass
+
+        return user
+    
+# 2. PROFESSIONAL USER SERIALIZER (FormData & Images)
+class ProRegistrationSerializer(serializers.ModelSerializer):
+    role = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    
+    # Document fields
+    bar_council_id_image = serializers.ImageField(write_only=True, required=False)
+    nid_image = serializers.ImageField(write_only=True, required=False)
+
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number', 'address', 'profile_image', 'role', 'bar_council_id_image', 'nid_image']
+
+    def validate(self, data):
+        role = data.get('role')
+        if role not in ['Lawyer', 'Volunteer']:
+            raise serializers.ValidationError({"role": "Invalid professional role."})
+            
+        if role == 'Lawyer' and not data.get('bar_council_id_image'):
+            raise serializers.ValidationError({"bar_council_id_image": "Bar Council ID Image is required."})
+        
+        if role == 'Volunteer' and not data.get('nid_image'):
+            raise serializers.ValidationError({"nid_image": "NID Image is required."})
+
+        return data
+
+    def create(self, validated_data):
+        role_name = validated_data.pop('role')
+        password = validated_data.pop('password')
+        bar_id_image = validated_data.pop('bar_council_id_image', None)
+        nid_image = validated_data.pop('nid_image', None)
+
+        validated_data['username'] = validated_data['email'].split('@')[0]
+
+        # Create user
+        user = User(**validated_data)
+        user.set_password(password)
+        user.is_verified = False # Pros must be manually verified by admins
+        user.save()
+
+        # Assign Role
         try:
             group = Group.objects.get(name=role_name)
             user.groups.add(group)
         except Group.DoesNotExist:
             pass
 
-        # 5. Lawyer Profile
-        if role_name == 'Lawyer' and bar_id:
-            LawyerProfile.objects.create(
-                user=user, 
-                bar_council_id=bar_id, 
-                specialization=spec or "General"
-            )
+        # Create specific profile
+        if role_name == 'Lawyer':
+            LawyerProfile.objects.create(user=user, bar_council_id_image=bar_id_image)
+        elif role_name == 'Volunteer':
+            VolunteerProfile.objects.create(user=user, nid_image=nid_image)
 
         return user
 
