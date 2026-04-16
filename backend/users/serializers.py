@@ -101,9 +101,10 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 class UserListSerializer(serializers.ModelSerializer):
+    imageUrl = serializers.ReadOnlyField(source='get_full_image_url')
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'date_joined']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'date_joined', 'imageUrl']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
