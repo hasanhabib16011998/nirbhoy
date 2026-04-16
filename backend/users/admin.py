@@ -20,7 +20,7 @@ class CustomUserAdmin(UserAdmin):
     # This adds your custom fields to the edit form
     fieldsets = UserAdmin.fieldsets + (
         ('Nirbhoy Custom Fields', {
-            'fields': ('phone_number', 'is_verified', 'is_anonymous_user'),
+            'fields': ('phone_number', 'profile_image', 'is_verified', 'is_anonymous_user'),
         }),
     )
     

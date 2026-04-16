@@ -19,7 +19,8 @@ import {
     getUserPosts, 
     getUserById,
     getSavedPosts, 
-    getUsersByGroup 
+    getUsersByGroup,
+    updateUser
   } from '../api/index';
   
   export const useCreateUserAccount = () => {
@@ -158,5 +159,19 @@ import {
       queryKey: ['getUserById', userId],
       queryFn: () => getUserById(userId),
       enabled: !!userId,
+    });
+  };
+
+  export const useUpdateUser = () => {
+    const queryClient = useQueryClient();
+    
+    return useMutation({
+      mutationFn: (user) => updateUser(user),
+      onSuccess: (data) => {
+        // This tells React Query to immediately refresh the profile page with new data
+        queryClient.invalidateQueries({
+          queryKey: ['getUserById', String(data.id)],
+        });
+      },
     });
   };

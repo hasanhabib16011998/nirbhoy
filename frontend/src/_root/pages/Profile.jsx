@@ -14,7 +14,6 @@ import { useGetUserById } from "@/lib/react-query/queriesAndMutations";
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 
-
 const StatBlock = ({ value, label }) => (
   <div className="flex-center gap-2">
     <p className="small-semibold lg:body-bold text-primary-500">{value}</p>
@@ -35,6 +34,9 @@ const Profile = () => {
         <Loader />
       </div>
     );
+
+  // Safely check if this is the logged-in user's own profile
+  const isOwnProfile = String(user.id) === String(currentUser.id);
 
   return (
     <div className="profile-container">
@@ -58,7 +60,8 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
-              <StatBlock value={currentUser.posts.length} label="Posts" />
+              {/* FIXED: Added optional chaining and fallback for posts.length */}
+              <StatBlock value={currentUser.posts?.length || 0} label="Posts" />
               <StatBlock value={20} label="Followers" />
               <StatBlock value={20} label="Following" />
             </div>
@@ -69,12 +72,12 @@ const Profile = () => {
           </div>
 
           <div className="flex justify-center gap-4">
-            <div className={`${user.id !== currentUser.$id && "hidden"}`}>
+            {/* If it IS their profile, show Edit Profile */}
+            {isOwnProfile && (
               <Link
-                to={`/update-profile/${currentUser.$id}`}
-                className={`h-12 bg-dark-4 px-5 text-light-1 flex-center gap-2 rounded-lg ${
-                  user.id !== currentUser.$id && "hidden"
-                }`}>
+                to={`/update-profile/${currentUser.id}`}
+                className="h-12 bg-dark-4 px-5 text-light-1 flex-center gap-2 rounded-lg"
+              >
                 <img
                   src={"/assets/icons/edit.svg"}
                   alt="edit"
@@ -85,23 +88,27 @@ const Profile = () => {
                   Edit Profile
                 </p>
               </Link>
-            </div>
-            <div className={`${user.id === id && "hidden"}`}>
+            )}
+
+            {/* If it is NOT their profile, show Follow */}
+            {!isOwnProfile && (
               <Button type="button" className="shad-button_primary px-8">
                 Follow
               </Button>
-            </div>
+            )}
           </div>
         </div>
+      {/* FIXED: Removed the extra stray closing </div> tags here */}
       </div>
 
-      {currentUser.$id === user.id && (
+      {isOwnProfile && (
         <div className="flex max-w-5xl w-full">
           <Link
             to={`/profile/${id}`}
             className={`profile-tab rounded-l-lg ${
               pathname === `/profile/${id}` && "bg-dark-3"
-            }`}>
+            }`}
+          >
             <img
               src={"/assets/icons/posts.svg"}
               alt="posts"
@@ -114,7 +121,8 @@ const Profile = () => {
             to={`/profile/${id}/liked-posts`}
             className={`profile-tab rounded-r-lg ${
               pathname === `/profile/${id}/liked-posts` && "bg-dark-3"
-            }`}>
+            }`}
+          >
             <img
               src={"/assets/icons/like.svg"}
               alt="like"
@@ -129,9 +137,10 @@ const Profile = () => {
       <Routes>
         <Route
           index
-          element={<GridPostList posts={currentUser.posts} showUser={false} />}
+          element={<GridPostList posts={currentUser.posts || []} showUser={false} />}
         />
-        {currentUser.$id === user.id && (
+        {/* FIXED: Replaced currentUser.$id with isOwnProfile */}
+        {isOwnProfile && (
           <Route path="/liked-posts" element={<LikedPosts />} />
         )}
       </Routes>

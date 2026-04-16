@@ -124,10 +124,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         # The frontend gets this exact JSON structure
         fields = [
             'id', 'username', 'email', 
+            'first_name', 'last_name', 'phone_number', 'address', # ✅ Updatable fields
             'name', 'imageUrl', 'bio', 
             'posts', 'followers_count', 'following_count',
             'is_verified'
         ]
+
+        read_only_fields = ['username', 'email', 'is_verified']
 
     def get_name(self, obj):
         # Return "First Last" or fallback to Username
@@ -135,7 +138,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return full_name if full_name else obj.username
 
     def get_imageUrl(self, obj):
-        # Return None so frontend uses the default placeholder image
+        if obj.profile_image:
+            # Grab the request object from the context
+            request = self.context.get('request')
+            
+            if request:
+                # This automatically prepends http://your-domain.com to the relative URL
+                return request.build_absolute_uri(obj.profile_image.url)
+            
+            # Fallback just in case request isn't available
+            return obj.profile_image.url
+            
         return None 
 
     def get_bio(self, obj):

@@ -160,7 +160,7 @@ class UserListByGroupView(generics.ListAPIView):
         
         return queryset
     
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(generics.RetrieveUpdateAPIView):
     # This acts as the "Pool" of users we can search in.
     queryset = User.objects.all()
     

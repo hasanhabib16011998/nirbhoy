@@ -405,6 +405,27 @@ export async function getUserById(userId) {
   }
 }
 
+export async function updateUser(userData) {
+  try {
+    const token = localStorage.getItem("accessToken");
+    // Using PATCH so we only update the fields we send
+    const response = await fetch(`${API_BASE_URL}/users/${userData.id}/`, {
+      method: "PATCH", 
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) throw new Error("Failed to update profile");
+    return await response.json();
+  } catch (error) {
+    console.log("Update User Error:", error);
+    throw error;
+  }
+}
+
 export async function getSavedPosts() {
   try {
     const token = localStorage.getItem("accessToken");
