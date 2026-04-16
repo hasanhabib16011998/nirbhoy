@@ -31,28 +31,34 @@ export default function SignInForm() {
   });
  
   async function handleSignin(values) {    
-    const session = await signInAccount(values);
+    try {
+      // 1. Await the mutation. If it fails, it will jump straight to the catch block.
+      const session = await signInAccount(values);
 
-    if (!session) {
+      // 2. If successful, set the tokens
+      localStorage.setItem('accessToken', session.access_token);
+      localStorage.setItem('refreshToken', session.refresh_token);
+
+      // 3. Verify the session
+      const isLoggedIn = await checkAuthUser();
+
+      if (isLoggedIn) {
+        reset();
+        navigate("/");
+      } else {
+        toast.error("Login failed", {
+          description: "Could not verify session. Please try again."
+        });
+      }
+      
+    } catch (error) {
+      // 4. Catch the error and display the specific message from your API
+      console.error("Login submission error:", error);
+      
       toast.error("Login failed", {
-        description: "Please try again."
+        // error.message will contain "Invalid email or password"
+        description: error.message || "Please try again." 
       });
-      return;
-    }
-
-    localStorage.setItem('accessToken', session.access_token);
-    localStorage.setItem('refreshToken', session.refresh_token);
-
-    const isLoggedIn = await checkAuthUser();
-
-    if (isLoggedIn) {
-      reset();
-      navigate("/");
-    } else {
-      toast.error("Login failed", {
-        description: "Could not verify session. Please try again."
-      });
-      return;
     }
   }
 

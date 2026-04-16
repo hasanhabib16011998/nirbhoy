@@ -4,16 +4,27 @@ import { Link } from "react-router-dom";
 import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 import PostStats from "./PostStats";
+import { useState } from "react";
 
 
 const PostCard = ({ post }) => {
   const { user } = useUserContext();
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const MAX_CAPTION_LENGTH = 100;
 
   if (!post.author) return;
 
   const tagsArray = typeof post.tags === 'string' 
     ? post.tags.split(',').filter(tag => tag.trim() !== '') // Split and remove empty strings
     : Array.isArray(post.tags) ? post.tags : [];
+
+  const shouldTruncate = post.caption?.length > MAX_CAPTION_LENGTH;
+
+  //Determine what text to display based on state
+  const displayedCaption = isExpanded || !shouldTruncate 
+    ? post.caption 
+    : `${post.caption.slice(0, MAX_CAPTION_LENGTH)}...`;
 
   return (
     <div className="post-card">
@@ -60,7 +71,20 @@ const PostCard = ({ post }) => {
 
       <Link to={`/posts/${post.id}`}>
         <div className="small-medium lg:base-medium py-5">
-          <p>{post.caption}</p>
+          <p>
+            {displayedCaption}
+            {shouldTruncate && (
+              <span
+                onClick={(e) => {
+                  e.preventDefault(); // Prevents the <Link> wrapper from firing!
+                  setIsExpanded(!isExpanded);
+                }}
+                className="text-primary-500 cursor-pointer ml-1 font-semibold text-sm hover:underline"
+              >
+                {isExpanded ? " Show less" : " See more"}
+              </span>
+            )}
+          </p>
           <ul className="flex gap-1 mt-2">
             {tagsArray.map((tag, index) => (
               <li key={`${tag}${index}`} className="text-light-3 small-regular">
