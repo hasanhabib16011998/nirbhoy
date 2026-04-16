@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
@@ -14,6 +15,13 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    @property
+    def get_full_image_url(self):
+        if self.profile_image:
+            base_url = getattr(settings, 'BACKEND_URL', 'http://127.0.0.1:8000')
+            return f"{base_url}{self.profile_image.url}"
+        return None
 
 class LawyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lawyer_profile')

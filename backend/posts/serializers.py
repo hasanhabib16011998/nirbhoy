@@ -3,9 +3,10 @@ from .models import Post, SavedPost
 from users.models import User
 
 class UserTinySerializer(serializers.ModelSerializer):
+    profile_image = serializers.ReadOnlyField(source='get_full_image_url')
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name'] 
+        fields = ['id', 'username', 'first_name', 'last_name', 'profile_image' ] 
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserTinySerializer(read_only=True)

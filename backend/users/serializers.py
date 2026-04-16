@@ -112,7 +112,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     # 2. Add fields expected by your React Profile component
     name = serializers.SerializerMethodField()
-    imageUrl = serializers.SerializerMethodField()
+    imageUrl = serializers.ReadOnlyField(source='get_full_image_url')
     bio = serializers.SerializerMethodField()
     
     # 3. Add placeholders for followers (until you implement that feature)
@@ -137,19 +137,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         full_name = f"{obj.first_name} {obj.last_name}".strip()
         return full_name if full_name else obj.username
 
-    def get_imageUrl(self, obj):
-        if obj.profile_image:
-            # Grab the request object from the context
-            request = self.context.get('request')
-            
-            if request:
-                # This automatically prepends http://your-domain.com to the relative URL
-                return request.build_absolute_uri(obj.profile_image.url)
-            
-            # Fallback just in case request isn't available
-            return obj.profile_image.url
-            
-        return None 
 
     def get_bio(self, obj):
         """

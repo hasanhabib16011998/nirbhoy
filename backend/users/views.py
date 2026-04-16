@@ -102,6 +102,7 @@ class UserProfileView(APIView):
             "last_name": user.last_name,
             "role": role,
             "is_verified": user.is_verified,
+            "imageUrl": user.get_full_image_url,
         })
     
 

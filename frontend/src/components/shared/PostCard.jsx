@@ -33,7 +33,7 @@ const PostCard = ({ post }) => {
           <Link to={`/profile/${post.author.id}`}>
             <img
               src={
-                post.author?.imageUrl ||
+                post.author?.profile_image ||
                 "/assets/icons/profile-placeholder.svg"
               }
               alt="creator"
