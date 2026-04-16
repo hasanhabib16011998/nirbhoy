@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/shared/PasswordInput"
 import { SignupValidation } from "@/lib/validation"
 import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
@@ -150,8 +151,7 @@ export default function SignUpForm() {
         {/* Password */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-white">Password</label>
-          <Input 
-            type="password" 
+          <PasswordInput 
             className="shad-input"
             {...register("password")} 
           />

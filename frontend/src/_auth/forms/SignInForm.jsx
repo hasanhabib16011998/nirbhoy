@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { SigninValidation } from "@/lib/validation"
 import { useSignInAccount } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
+import { PasswordInput } from "@/components/shared/PasswordInput"
 
 export default function SignInForm() {
   const navigate = useNavigate();
@@ -89,8 +90,7 @@ export default function SignInForm() {
         {/* Password Field */}
         <div className="space-y-2">
           <label className="shad-form_label text-sm font-medium">Password</label>
-          <Input 
-            type="password" 
+          <PasswordInput 
             className="shad-input" 
             {...register("password")} 
           />

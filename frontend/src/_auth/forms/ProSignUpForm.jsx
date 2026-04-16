@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 import { toast } from "sonner";
 import { createProfessionalAccount } from "@/lib/api";
 import FileUploader from "@/components/shared/FileUploader"; // ✅ Import your FileUploader
@@ -135,7 +136,10 @@ export default function ProSignUpForm() {
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-white">Password</label>
-          <Input type="password" {...register("password", { required: true })} className="shad-input" />
+          <PasswordInput 
+            className="shad-input"
+            {...register("password")} 
+          />
         </div>
 
         {/* --- FILE UPLOADERS --- */}
