@@ -6,3 +6,19 @@
 6. Normal users dashboard should include previous Sos and lawyers tickets status.
 7. Add text in Sos Alerts
 8. About section
+
+
+16 April 2026
+
+1. OTP Verification.
+2. Signup form should allow multiple format(PDF).
+3. Post/legal aid can receive multiple images/videos.
+4. Comments on posts.
+5. User Profile should display all relevant fields.
+6. Volunteer dashboard should show all contact details of user (SOS).
+7. Volunteer dashboard should display previous SoS responses.
+8. Normal users dashboard should include previous Sos and lawyers tickets history.
+9. SoS review from both user and volunteer(reviewed only by admin).
+10. Contact us/ about us section.
+11. SoS should expire after 3 hours.
+12. Icon/badge for different user types.
