@@ -27,6 +27,7 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
+  console.log(currentUser);
 
   if (!currentUser)
     return (
@@ -62,13 +63,34 @@ const Profile = () => {
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
               {/* FIXED: Added optional chaining and fallback for posts.length */}
               <StatBlock value={currentUser.posts?.length || 0} label="Posts" />
-              <StatBlock value={20} label="Followers" />
-              <StatBlock value={20} label="Following" />
+              <StatBlock value={currentUser.followers_count || 0} label="Followers" />
+              <StatBlock value={currentUser.following_count || 0} label="Following" />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
               {currentUser.bio}
             </p>
+
+            <div className="flex flex-col gap-2 mt-5 mb-5 xl:mb-0 text-center xl:text-left w-full">
+              {currentUser.email && (
+                <p className="small-regular md:body-medium text-light-3">
+                  <span className="text-light-1 font-semibold mr-2">Email:</span> 
+                  {currentUser.email}
+                </p>
+              )}
+              {currentUser.phone_number && (
+                <p className="small-regular md:body-medium text-light-3">
+                  <span className="text-light-1 font-semibold mr-2">Phone:</span> 
+                  {currentUser.phone_number}
+                </p>
+              )}
+              {currentUser.address && (
+                <p className="small-regular md:body-medium text-light-3">
+                  <span className="text-light-1 font-semibold mr-2">Location:</span> 
+                  {currentUser.address}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-center gap-4">

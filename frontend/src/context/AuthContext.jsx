@@ -42,7 +42,6 @@ export function AuthProvider({ children }) {
       const currentAccount = await getCurrentUser();
       
       if (currentAccount) {
-        console.log("current user:", currentAccount);
         // ✅ Mapping Django response to your Frontend user object
         setUser({
           id: currentAccount.id.toString(), // Ensure ID is string

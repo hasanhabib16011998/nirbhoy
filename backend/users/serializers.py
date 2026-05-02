@@ -153,7 +153,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return "Advocate"
         
         elif 'Survivor' in groups:
-            return "Survivor Community Member"
+            return "Nirbhoy Community Member"
         
         elif 'Volunteer' in groups:
             return "Verified Volunteer"

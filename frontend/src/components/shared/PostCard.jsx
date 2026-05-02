@@ -9,7 +9,6 @@ import { useState } from "react";
 
 const PostCard = ({ post }) => {
   const { user } = useUserContext();
-  console.log(post);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const MAX_CAPTION_LENGTH = 100;
