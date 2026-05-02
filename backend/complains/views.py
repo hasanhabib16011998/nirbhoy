@@ -78,3 +78,15 @@ class SosAlertDetailAPIView(APIView):
         # Serialize the data and send it back to the React frontend
         serializer = SosAlertDetailsSerializer(alert)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SosHistoryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch all alerts where the current user is in the 'responders' ManyToMany field
+        # Order by newest first
+        history_alerts = SosAlert.objects.filter(responders=request.user).order_by('-timestamp')
+        
+        # Use your standard serializer (make sure it's imported!)
+        serializer = SosAlertSerializer(history_alerts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

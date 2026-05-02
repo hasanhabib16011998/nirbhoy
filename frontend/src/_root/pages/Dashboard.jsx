@@ -5,7 +5,7 @@ import Loader from '@/components/shared/Loader';
 // Import the separated components
 import VolunteerDashboard from './VolunteerDashboard';
 import LawyerDashboard from './LawyerDashboard';
-import AdminDashboard from './AdminDashboard';
+import UserDashboard from './UserDashboard';
 
 export default function Dashboard() {
   const { user, isLoading } = useUserContext();
@@ -27,7 +27,7 @@ export default function Dashboard() {
       case 'Lawyer':
         return <LawyerDashboard />;
       default:
-        return <AdminDashboard />; 
+        return <UserDashboard />; 
     }
   };
 

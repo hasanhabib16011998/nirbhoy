@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Loader from '@/components/shared/Loader';
 import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+
 
 // Optional: Bring in Leaflet to show the location visually!
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -107,9 +109,18 @@ const SosDetails = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto flex flex-col gap-6">
-      <button onClick={() => navigate(-1)} className="text-light-3 hover:text-light-1 underline self-start mb-2">
-        &larr; Back to Dashboard
-      </button>
+        <Button
+          onClick={() => navigate(-1)}
+          variant="ghost"
+          className="shad-button_ghost">
+          <img
+            src={"/assets/icons/back.svg"}
+            alt="back"
+            width={24}
+            height={24}
+          />
+          <p className="small-medium lg:base-medium">Back</p>
+        </Button>
 
       <div className="bg-dark-2 border border-primary-500 rounded-xl p-6">
         <h2 className="h2-bold text-red-500 mb-4">SOS Details</h2>

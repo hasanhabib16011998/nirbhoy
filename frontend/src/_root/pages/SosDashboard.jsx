@@ -23,7 +23,7 @@ const SosDashboard = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [watchId, setWatchId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [backendResponse, setBackendResponse] = useState(""); 
+  const [backendResponse, setBackendResponse] = useState("");
   
   // NEW STATE: Store coordinates and message
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -31,12 +31,13 @@ const SosDashboard = () => {
   const [details, setDetails] = useState(""); 
 
   const hasTriggeredBackend = useRef(false);
+  const [activeAlert, setActiveAlert] = useState(null);
+  const token = localStorage.getItem("accessToken");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
   // ✅ Accept 'message' as an argument
   const sendInitialSosToBackend = async (latitude, longitude, message) => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
       const response = await fetch(`${API_BASE_URL}/complains/trigger/`, {
         method: "POST",
@@ -58,6 +59,7 @@ const SosDashboard = () => {
       }
 
       setBackendResponse(data.message);
+      setActiveAlert(data.data);
       
     } catch (error) {
       console.error("Backend SOS error:", error);
@@ -74,6 +76,7 @@ const SosDashboard = () => {
     setIsTracking(true);
     setErrorMsg("");
     setBackendResponse("");
+    setActiveAlert(null);
     hasTriggeredBackend.current = false; 
 
     const id = navigator.geolocation.watchPosition(
@@ -112,7 +115,41 @@ const SosDashboard = () => {
     setBackendResponse("");
     setCurrentLocation(null); 
     setDetails(""); // ✅ Optionally clear the message when stopping the SOS
+    setActiveAlert(null);
   };
+
+
+  //polling the backend for responders
+  useEffect(() => {
+    let intervalId;
+
+    const fetchAlertUpdates = async () => {
+      if (!activeAlert?.id) return;
+      
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setActiveAlert(data); // Update state with the fresh data (including responders)
+        }
+      } catch (error) {
+        console.error("Error polling SOS updates:", error);
+      }
+    };
+
+    // If we are tracking and have an ID, check for responders every 5 seconds
+    if (isTracking && activeAlert?.id) {
+      intervalId = setInterval(fetchAlertUpdates, 5000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isTracking, activeAlert?.id, API_BASE_URL]);
 
   useEffect(() => {
     return () => {
@@ -133,10 +170,42 @@ const SosDashboard = () => {
 
         {errorMsg && <p className="text-red-500 body-bold">{errorMsg}</p>}
         
-        {backendResponse && (
-          <div className="bg-green-500/10 border border-green-500 p-4 rounded-lg w-full">
-            <p className="text-green-500 body-bold">{backendResponse}</p>
+        {/* ✅ NEW UI: Show Responders if they exist */}
+        {activeAlert?.responders?.length > 0 ? (
+          <div className="bg-orange-900/20 border-2 border-orange-500 p-5 rounded-xl w-full shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-pulse">
+            <h2 className="text-orange-500 h2-bold mb-3 flex items-center justify-center gap-2">
+              🏃 Help is on the way!
+            </h2>
+            <p className="text-light-2 small-medium mb-4">The following volunteer(s) are responding to your location:</p>
+            
+            <div className="flex flex-col gap-3">
+              {activeAlert.responders.map((responder) => (
+                <div key={responder.id} className="bg-dark-3 p-3 rounded-lg border border-dark-4 flex items-center gap-3 text-left">
+                  <img 
+                    src={responder.profile_image || "/assets/icons/profile-placeholder.svg"} 
+                    alt="volunteer" 
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="text-light-1 body-bold">{responder.first_name} {responder.last_name}</p>
+                    {responder.phone_number && (
+                      <a href={`tel:${responder.phone_number}`} className="text-primary-500 small-medium hover:underline">
+                        📞 {responder.phone_number}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        ) : (
+          /* Show standard success message if no one has responded yet */
+          backendResponse && (
+            <div className="bg-green-500/10 border border-green-500 p-4 rounded-lg w-full">
+              <p className="text-green-500 body-bold">{backendResponse}</p>
+              <p className="text-light-3 small-regular mt-1">Waiting for volunteers to respond...</p>
+            </div>
+          )
         )}
 
         {/* MAP COMPONENT */}
@@ -161,7 +230,6 @@ const SosDashboard = () => {
           </div>
         )}
 
-        {/* ✅ DETAILS TEXTAREA: Only show if not currently broadcasting */}
         {!isTracking && (
           <div className="w-full flex flex-col items-start gap-2">
             <label htmlFor="sos-details" className="text-light-2 small-medium ml-1">

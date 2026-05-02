@@ -18,6 +18,7 @@ class SosVictimSerializer(serializers.ModelSerializer):
 
 class SosAlertDetailsSerializer(serializers.ModelSerializer):
     user = SosVictimSerializer(read_only=True)
+    responders = SosVictimSerializer(many=True, read_only=True)
     class Meta:
         model = SosAlert
         fields = ['id', 'user', 'latitude', 'longitude', 'message', 'timestamp', 'is_active', 'responders']
