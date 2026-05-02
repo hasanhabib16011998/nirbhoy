@@ -9,7 +9,9 @@ export { default as PostDetails } from "./PostDetails";
 export { default as LikedPosts } from "./LikedPosts";
 export { default as AllUsers } from "./AllUsers";
 export { default as SosDashboard } from "./SosDashboard";
+export { default as SosDetails } from "./SosDetails";
 export { default as AdminDashboard } from "./AdminDashboard";
 export { default as LawyerDashboard } from "./LawyerDashboard";
 export { default as VolunteerDashboard } from "./VolunteerDashboard";
+
 

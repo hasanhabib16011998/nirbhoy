@@ -1,13 +1,13 @@
 // src/components/dashboards/VolunteerDashboard.jsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Loader from '@/components/shared/Loader';
-import { toast } from 'sonner'; // ✅ Using Sonner
+import { toast } from 'sonner';
 
 const VolunteerDashboard = () => {
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Function to fetch active alerts
   const fetchActiveAlerts = async () => {
     try {
       const token = localStorage.getItem('accessToken');
@@ -22,7 +22,6 @@ const VolunteerDashboard = () => {
       
       const data = await response.json();
       setAlerts(data);
-      console.log(data);
     } catch (err) {
       toast.error("Error fetching alerts", {
         description: err.message,
@@ -32,75 +31,8 @@ const VolunteerDashboard = () => {
     }
   };
 
-  // Function to notify system that volunteer is responding
-  const handleRespondAlert = async (alertId) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-      // Ensure you create this endpoint in your Django backend!
-      const response = await fetch(`${API_BASE_URL}/complains/${alertId}/respond/`, {
-        method: 'PATCH', 
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to register your response status');
-
-      // Optimistically update the UI to show they are responding
-      setAlerts((prevAlerts) => 
-        prevAlerts.map((alert) => 
-          alert.id === alertId ? { ...alert, isResponding: true } : alert
-        )
-      );
-
-      toast.success("Response Recorded", {
-        description: "You are marked as responding to this alert. Please stay safe.",
-      });
-
-    } catch (err) {
-      toast.error("Action Failed", {
-        description: err.message,
-      });
-    }
-  };
-
-  // Function to resolve an alert
-  const handleResolveAlert = async (alertId) => {
-    if (!window.confirm("Are you sure this situation is resolved and the user is safe?")) return;
-
-    try {
-      const token = localStorage.getItem('accessToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-      const response = await fetch(`${API_BASE_URL}/complains/${alertId}/resolve/`, {
-        method: 'PATCH', 
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to resolve the alert');
-
-      // Remove the solved alert from the screen
-      setAlerts((prevAlerts) => prevAlerts.filter((alert) => alert.id !== alertId));
-
-      toast.success("Emergency Resolved", {
-        description: "The alert has been successfully closed. Thank you for your help.",
-      });
-
-    } catch (err) {
-      toast.error("Failed to resolve", {
-        description: err.message,
-      });
-    }
-  };
-
-  // Fetch alerts when the component loads
   useEffect(() => {
     fetchActiveAlerts();
-    
     // Poll for new alerts every 10 seconds
     const intervalId = setInterval(fetchActiveAlerts, 10000);
     return () => clearInterval(intervalId);
@@ -140,7 +72,6 @@ const VolunteerDashboard = () => {
                   alert.isResponding ? "bg-orange-900/20 border-orange-500" : "bg-red-900/20 border-red-500"
                 }`}
               >
-                {/* Alert Details */}
                 <div>
                   <h3 className={`h3-bold flex items-center gap-2 ${alert.isResponding ? 'text-orange-500' : 'text-red-500'}`}>
                     {alert.isResponding ? "🏃 EN ROUTE" : "🚨 SOS ALERT"}
@@ -151,39 +82,17 @@ const VolunteerDashboard = () => {
                   <p className="text-light-3 small-regular mt-1">
                     Time: {new Date(alert.timestamp).toLocaleString()}
                   </p>
-                  
-                  {/* ✅ Google Maps URL Fixed */}
-                  <a 
-                    href={`https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary-500 hover:text-primary-600 underline small-medium mt-2 inline-block"
-                  >
-                    Open in Google Maps
-                  </a>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-4 md:mt-0">
-                  
-                  {/* Hide Respond button if already responding */}
-                  {!alert.isResponding && (
-                    <button
-                      onClick={() => handleRespondAlert(alert.id)}
-                      className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full sm:w-auto"
-                    >
-                      I Can Respond
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => handleResolveAlert(alert.id)}
-                    className="px-6 py-3 bg-dark-4 border border-red-500 hover:bg-red-600 text-white base-medium rounded-lg transition-colors w-full sm:w-auto"
+                {/* ✅ Replaced actions with a single View Details link */}
+                <div className="flex w-full md:w-auto mt-4 md:mt-0">
+                  <Link
+                    to={`/sos/${alert.id}`}
+                    className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full text-center"
                   >
-                    Mark as Resolved
-                  </button>
+                    View Details
+                  </Link>
                 </div>
-
               </div>
             ))
           )}

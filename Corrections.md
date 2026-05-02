@@ -15,7 +15,7 @@
 3. Post/legal aid can receive multiple images/videos.
 4. Comments on posts.
 5. User Profile should display all relevant fields.(done)
-6. Volunteer dashboard should show all contact details of user (SOS).
+6. Volunteer dashboard should show all contact details of user (SOS). (done)
 7. Volunteer dashboard should display previous SoS responses.
 8. Normal users dashboard should include previous Sos and lawyers tickets history.
 9. SoS review from both user and volunteer(reviewed only by admin).

@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .models import SosAlert
-from .serializers import SosAlertSerializer
+from .serializers import SosAlertSerializer, SosAlertDetailsSerializer
 
 class ReceiveSosAPIView(APIView):
     # This ensures only logged-in users can trigger an SOS
@@ -66,3 +66,15 @@ class RespondSosAPIView(APIView):
             {"message": "You have been marked as responding to this emergency."},
             status=status.HTTP_200_OK
         )
+    
+
+class SosAlertDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        # Fetch the alert or return a 404 if it doesn't exist
+        alert = get_object_or_404(SosAlert, pk=pk)
+        
+        # Serialize the data and send it back to the React frontend
+        serializer = SosAlertDetailsSerializer(alert)
+        return Response(serializer.data, status=status.HTTP_200_OK)

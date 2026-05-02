@@ -25,6 +25,9 @@ class SosAlertAdmin(admin.ModelAdmin):
         ('Location Data', {
             'fields': ('latitude', 'longitude', 'map_view')
         }),
+        ('Responders', {
+            'fields': ('responders',)
+        }),
     )
 
     def map_view(self, obj):
