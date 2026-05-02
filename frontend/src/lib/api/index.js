@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 export async function createUserAccount(user) {
   try {
@@ -25,7 +26,7 @@ export async function createUserAccount(user) {
 }
 
 export async function createProfessionalAccount(formData) {
-  try {    
+  try {
     const response = await fetch(`${API_BASE_URL}/users/register-pro/`, {
       method: "POST",
       body: formData,
@@ -64,7 +65,6 @@ export async function signInAccount(user) {
     console.log(data);
 
     return data;
-
   } catch (error) {
     console.log("Login API Error:", error);
     throw error;
@@ -83,7 +83,7 @@ export async function getCurrentUser() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // ✅ Attach the Token
+        Authorization: `Bearer ${token}`, // ✅ Attach the Token
       },
     });
 
@@ -98,7 +98,6 @@ export async function getCurrentUser() {
 
     const data = await response.json();
     return data;
-
   } catch (error) {
     console.log("GetCurrentUser Error:", error);
     return null;
@@ -116,7 +115,7 @@ export async function signOutAccount() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`, // We need auth to logout
+          Authorization: `Bearer ${accessToken}`, // We need auth to logout
         },
         body: JSON.stringify({ refresh_token: refreshToken }),
       });
@@ -130,7 +129,6 @@ export async function signOutAccount() {
     localStorage.removeItem("user");
 
     return { success: true };
-
   } catch (error) {
     console.log("Logout Error:", error);
     // Even if backend fails, we must clear frontend storage to "log out" the user
@@ -165,7 +163,7 @@ export async function createPost(post) {
       headers: {
         // NOTE: Do NOT set "Content-Type": "multipart/form-data" manually.
         // The browser sets it automatically with the correct boundary when using FormData.
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
@@ -176,7 +174,6 @@ export async function createPost(post) {
     }
 
     return await response.json();
-
   } catch (error) {
     console.log("Create Post Error:", error);
     throw error;
@@ -192,7 +189,7 @@ export async function getRecentPosts() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -206,7 +203,6 @@ export async function getRecentPosts() {
     // Django REST Framework returns the array directly (or inside 'results' if using pagination)
     // If you used generics.ListAPIView without pagination, it's just the array.
     return { documents: data };
-
   } catch (error) {
     console.log("Get Recent Posts Error:", error);
     return null;
@@ -223,7 +219,7 @@ export async function getPostById(postId) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -233,7 +229,6 @@ export async function getPostById(postId) {
 
     const data = await response.json();
     return data; // Returns the single Post object
-
   } catch (error) {
     console.log("Get Post By ID Error:", error);
     return null;
@@ -254,7 +249,7 @@ export async function getUsers(limit) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -266,7 +261,6 @@ export async function getUsers(limit) {
 
     // 2. Wrap in 'documents' to match your Home.tsx structure
     return { documents: data };
-
   } catch (error) {
     console.log("Get Users Error:", error);
     return null; // Return null so React Query knows it failed
@@ -286,7 +280,7 @@ export async function getUsersByGroup(limit, group) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -294,13 +288,11 @@ export async function getUsersByGroup(limit, group) {
 
     const data = await response.json();
     return { documents: data };
-
   } catch (error) {
     console.log("Get Users Error:", error);
     return null;
   }
 }
-
 
 // 1. LIKE POST
 export async function likePost(postId, likesArray) {
@@ -312,7 +304,7 @@ export async function likePost(postId, likesArray) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       // We send the array to the backend
       body: JSON.stringify({ likes: likesArray }),
@@ -334,7 +326,7 @@ export async function savePost(postId) {
       method: "POST", // POST is used for toggling
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -356,7 +348,7 @@ export async function getUserPosts(userId) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -366,10 +358,9 @@ export async function getUserPosts(userId) {
 
     const data = await response.json();
 
-    // Wrap in 'documents' to match your existing app structure if needed, 
+    // Wrap in 'documents' to match your existing app structure if needed,
     // otherwise just return 'data'
     return { documents: data };
-
   } catch (error) {
     console.log("Get User Posts Error:", error);
     return null;
@@ -388,7 +379,7 @@ export async function getUserById(userId) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -398,7 +389,6 @@ export async function getUserById(userId) {
 
     // 3. Return the JSON (It will contain: id, name, bio, posts, etc.)
     return await response.json();
-
   } catch (error) {
     console.log("Get User By ID Error:", error);
     return null;
@@ -410,10 +400,10 @@ export async function updateUser(userData) {
     const token = localStorage.getItem("accessToken");
     // Using PATCH so we only update the fields we send
     const response = await fetch(`${API_BASE_URL}/users/${userData.id}/`, {
-      method: "PATCH", 
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(userData),
     });
@@ -435,7 +425,7 @@ export async function getSavedPosts() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -447,9 +437,24 @@ export async function getSavedPosts() {
     console.log(data);
 
     return data;
-
   } catch (error) {
     console.log("Get Recent Posts Error:", error);
     return null;
   }
+}
+
+export async function getSosData() {
+  const token = localStorage.getItem("accessToken");
+  const response = await fetch(`${API_BASE_URL}/complains/dashboard/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch SOS dashboard data");
+  }
+
+  return await response.json();
 }

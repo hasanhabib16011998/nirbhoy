@@ -28,14 +28,6 @@ class ReceiveSosAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-class ActiveSosListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Only fetch alerts where is_active is True, newest first
-        active_alerts = SosAlert.objects.filter(is_active=True).order_by('-timestamp')
-        serializer = SosAlertSerializer(active_alerts, many=True)
-        return Response(serializer.data)
 
 # View to mark a specific alert as resolved
 class ResolveSosAPIView(APIView):
@@ -79,14 +71,42 @@ class SosAlertDetailAPIView(APIView):
         serializer = SosAlertDetailsSerializer(alert)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-class SosHistoryAPIView(APIView):
+class SOSDashboardAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Fetch all alerts where the current user is in the 'responders' ManyToMany field
-        # Order by newest first
-        history_alerts = SosAlert.objects.filter(responders=request.user).order_by('-timestamp')
+        user = request.user
         
-        # Use your standard serializer (make sure it's imported!)
-        serializer = SosAlertSerializer(history_alerts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # 1. Safely determine the user's role (convert to lowercase for safe checking)
+        role = user.groups.first().name if user.groups.exists() else "survivor"
+        
+        # Define which roles are allowed to respond to emergencies
+        responder_roles = ['Volunteer', 'Survivor']
+
+        # 2. Dynamically set the querysets based on the role
+        if role in responder_roles:
+            if role == 'Volunteer':
+                # 🚨 VOLUNTEER VIEW
+                # Active: All currently active emergencies
+                active_alerts = SosAlert.objects.filter(is_active=True).order_by('-timestamp')
+                
+                # History: Emergencies where THIS volunteer is in the responders list
+                history_alerts = SosAlert.objects.filter(responders=user).order_by('-timestamp')
+            
+            else:
+                # 🛡️ SURVIVOR VIEW
+                # Active: Only the active emergencies created by THIS user
+                active_alerts = SosAlert.objects.filter(user=user, is_active=True).order_by('-timestamp')
+                
+                # History: Emergencies created by THIS user that are now resolved (is_active=False)
+                history_alerts = SosAlert.objects.filter(user=user, is_active=False).order_by('-timestamp')
+
+        # 3. Serialize the data
+        active_serializer = SosAlertSerializer(active_alerts, many=True)
+        history_serializer = SosAlertSerializer(history_alerts, many=True)
+        
+        # 4. Return combined data
+        return Response({
+            "active": active_serializer.data,
+            "history": history_serializer.data
+        }, status=status.HTTP_200_OK)

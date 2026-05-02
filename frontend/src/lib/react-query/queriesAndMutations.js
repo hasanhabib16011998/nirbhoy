@@ -21,6 +21,7 @@ import {
   getSavedPosts,
   getUsersByGroup,
   updateUser,
+  getSosData
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -172,5 +173,13 @@ export const useUpdateUser = () => {
         queryKey: ["getUserById", String(data.id)],
       });
     },
+  });
+};
+
+export const useGetSosData = () => {
+  return useQuery({
+    queryKey: ['sosDashboardData'],
+    queryFn: getSosData,
+    refetchInterval: 10000, // ✅ Automatically polls the backend every 10 seconds!
   });
 };

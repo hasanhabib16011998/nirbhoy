@@ -16,8 +16,8 @@
 4. Comments on posts.
 5. User Profile should display all relevant fields.(done)
 6. Volunteer dashboard should show all contact details of user (SOS). (done)
-7. Volunteer dashboard should display previous SoS responses.
-8. Normal users dashboard should include previous Sos and lawyers tickets history.
+7. Volunteer dashboard should display previous SoS responses. (done)
+8. Normal users dashboard should include previous Sos and lawyers tickets history. (done)
 9. SoS review from both user and volunteer(reviewed only by admin).
 10. Contact us/ about us section.
 11. SoS should expire after 3 hours.
