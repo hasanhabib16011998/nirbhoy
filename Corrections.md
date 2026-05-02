@@ -21,4 +21,4 @@
 9. SoS review from both user and volunteer(reviewed only by admin).
 10. Contact us/ about us section.
 11. SoS should expire after 3 hours.
-12. Icon/badge for different user types.
+12. Icon/badge for different user types. (done)

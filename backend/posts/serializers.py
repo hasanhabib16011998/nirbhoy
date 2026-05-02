@@ -4,9 +4,14 @@ from users.models import User
 
 class UserTinySerializer(serializers.ModelSerializer):
     profile_image = serializers.ReadOnlyField(source='get_full_image_url')
+    role = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'profile_image' ] 
+        fields = ['id', 'username', 'first_name', 'last_name', 'profile_image', 'role' ]
+        
+    def get_role(self, obj):
+        # 'obj' represents the User instance
+        return obj.groups.first().name if obj.groups.exists() else "Survivor"
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserTinySerializer(read_only=True)
