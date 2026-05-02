@@ -20,7 +20,7 @@ class SosAlertAdmin(admin.ModelAdmin):
     # Organize the detail view into sections
     fieldsets = (
         ('Alert Information', {
-            'fields': ('user', 'timestamp', 'is_active')
+            'fields': ('user', 'timestamp', 'is_active', 'message')
         }),
         ('Location Data', {
             'fields': ('latitude', 'longitude', 'map_view')

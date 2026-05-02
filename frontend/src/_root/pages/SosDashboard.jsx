@@ -25,12 +25,15 @@ const SosDashboard = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [backendResponse, setBackendResponse] = useState(""); 
   
-  // NEW STATE: Store the exact coordinates for the map
+  // NEW STATE: Store coordinates and message
   const [currentLocation, setCurrentLocation] = useState(null);
+  // ✅ Add state for the SOS message details
+  const [details, setDetails] = useState(""); 
 
   const hasTriggeredBackend = useRef(false);
 
-  const sendInitialSosToBackend = async (latitude, longitude) => {
+  // ✅ Accept 'message' as an argument
+  const sendInitialSosToBackend = async (latitude, longitude, message) => {
     try {
       const token = localStorage.getItem("accessToken");
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
@@ -44,6 +47,7 @@ const SosDashboard = () => {
         body: JSON.stringify({
           latitude: latitude,
           longitude: longitude,
+          message: message, // ✅ Include the message in the payload
         }),
       });
 
@@ -76,17 +80,15 @@ const SosDashboard = () => {
       (position) => {
         const { latitude, longitude } = position.coords;
         
-        // 1. Format coordinates for Django
         const formattedLat = parseFloat(latitude.toFixed(6));
         const formattedLng = parseFloat(longitude.toFixed(6));
 
-        // 2. Update state so the Map can render the pin!
         setCurrentLocation({ lat: formattedLat, lng: formattedLng });
         
-        // 3. Send to backend once
         if (!hasTriggeredBackend.current) {
           hasTriggeredBackend.current = true;
-          sendInitialSosToBackend(formattedLat, formattedLng);
+          // ✅ Pass the current 'details' state to the backend call
+          sendInitialSosToBackend(formattedLat, formattedLng, details);
         }
       },
       (error) => {
@@ -108,7 +110,8 @@ const SosDashboard = () => {
     setIsTracking(false);
     hasTriggeredBackend.current = false;
     setBackendResponse("");
-    setCurrentLocation(null); // Clear map data
+    setCurrentLocation(null); 
+    setDetails(""); // ✅ Optionally clear the message when stopping the SOS
   };
 
   useEffect(() => {
@@ -136,7 +139,7 @@ const SosDashboard = () => {
           </div>
         )}
 
-        {/* MAP COMPONENT - Renders only when coordinates exist */}
+        {/* MAP COMPONENT */}
         {currentLocation && isTracking && (
           <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)] z-0">
             <MapContainer 
@@ -155,6 +158,22 @@ const SosDashboard = () => {
                 </Popup>
               </Marker>
             </MapContainer>
+          </div>
+        )}
+
+        {/* ✅ DETAILS TEXTAREA: Only show if not currently broadcasting */}
+        {!isTracking && (
+          <div className="w-full flex flex-col items-start gap-2">
+            <label htmlFor="sos-details" className="text-light-2 small-medium ml-1">
+              Optional Details (Nature of emergency, medical needs, etc.)
+            </label>
+            <textarea
+              id="sos-details"
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              placeholder="E.g., Car accident, need medical help..."
+              className="w-full h-24 p-3 rounded-lg bg-dark-2 text-light-1 border-none placeholder:text-light-4 focus:ring-2 focus:ring-red-500 resize-none"
+            />
           </div>
         )}
 

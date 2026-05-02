@@ -14,7 +14,7 @@
 2. Signup form should allow multiple format(PDF).
 3. Post/legal aid can receive multiple images/videos.
 4. Comments on posts.
-5. User Profile should display all relevant fields.
+5. User Profile should display all relevant fields.(done)
 6. Volunteer dashboard should show all contact details of user (SOS).
 7. Volunteer dashboard should display previous SoS responses.
 8. Normal users dashboard should include previous Sos and lawyers tickets history.

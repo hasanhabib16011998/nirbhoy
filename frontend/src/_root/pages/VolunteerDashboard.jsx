@@ -22,6 +22,7 @@ const VolunteerDashboard = () => {
       
       const data = await response.json();
       setAlerts(data);
+      console.log(data);
     } catch (err) {
       toast.error("Error fetching alerts", {
         description: err.message,
