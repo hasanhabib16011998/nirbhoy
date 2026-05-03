@@ -62,7 +62,7 @@ export default function SignUpForm() {
           return response.data;
       },
       onSuccess: () => {
-          navigate.to("/login");
+          navigate("/sign-in");
       }
     })
 

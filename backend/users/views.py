@@ -7,6 +7,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
 from .models import *
+import random
+from django.core.cache import cache
 
 # 1. Registration APIView
 class RegisterView(APIView):
@@ -19,6 +21,14 @@ class RegisterView(APIView):
             
             # Fetch role for response
             role = user.groups.first().name if user.groups.exists() else "None"
+
+            #send OTP
+            otp = str(random.randint(1000, 9999))
+            cache_key = f"otp:{user.email}"
+            cache.set(cache_key, otp, timeout=300)
+            
+            # TODO: Integrate your actual Email or SMS sending logic here
+            print(f"--- MOCK EMAIL --- Sent OTP {otp} to {user.email}")
             
             return Response({
                 "message": "Registration successful",
@@ -49,7 +59,64 @@ class ProRegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+class VerifyUserOTPView(APIView):
+    """
+    Receives user data and OTP from the frontend, checks it against Redis,
+    and marks the user as verified if it matches.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        # Extract data sent from the React frontend
+        email = request.data.get('email')
+        submitted_otp = request.data.get('otp')
+
+        if not email or not submitted_otp:
+            return Response(
+                {"message": "Email and OTP are required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 1. Fetch the stored OTP from Redis using the same key format
+        cache_key = f"otp:{email}"
+        stored_otp = cache.get(cache_key)
+
+        # 2. Check if the OTP exists or has expired
+        if not stored_otp:
+            return Response(
+                {"message": "OTP has expired or does not exist. Please request a new one."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3. Compare the submitted OTP with the stored OTP
+        if str(stored_otp) == str(submitted_otp):
+            try:
+                # Find the user and update their verification status
+                user = User.objects.get(email=email)
+                user.is_verified = True
+                user.save()
+
+                # Clean up: Delete the OTP from Redis so it can't be reused
+                cache.delete(cache_key)
+
+                return Response(
+                    {"message": "Account successfully verified. You can now log in."}, 
+                    status=status.HTTP_200_OK
+                )
+                
+            except User.DoesNotExist:
+                return Response(
+                    {"message": "User not found."}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            # OTP did not match
+            return Response(
+                {"message": "Invalid OTP. Please check the code and try again."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
 # 2. Login APIView
 class LoginView(APIView):
