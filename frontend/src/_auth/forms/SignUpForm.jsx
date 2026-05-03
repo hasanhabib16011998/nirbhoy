@@ -7,11 +7,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/shared/PasswordInput";
 import { SignupValidation } from "@/lib/validation";
-import {
-  useCreateUserAccount,
-  useSignInAccount,
-} from "@/lib/react-query/queriesAndMutations";
-import { useUserContext } from "@/context/AuthContext";
+import { useCreateUserAccount } from "@/lib/react-query/queriesAndMutations";
 import { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios from 'axios';
@@ -21,11 +17,9 @@ export default function SignUpForm() {
   const [otp, setOtp] = useState(["","","",""]);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
   const [userData, setUserData] = useState(null);
 
   const { mutateAsync: createUserAccount, isPending: isCreatingUser } = useCreateUserAccount();
-  const { mutateAsync: signInAccount, isPending: isSigningIn } = useSignInAccount();
 
   // 1. Destructure register, handleSubmit, control, and errors directly from useForm
   const {
@@ -236,9 +230,9 @@ export default function SignUpForm() {
             <Button
               type="submit"
               className="shad-button_primary"
-              disabled={isCreatingUser || isSigningIn}
+              disabled={isCreatingUser}
             >
-              {isCreatingUser || isSigningIn ? (
+              {isCreatingUser ? (
                 <div className="flex-center gap-2">Processing...</div>
               ) : (
                 "Sign Up"
