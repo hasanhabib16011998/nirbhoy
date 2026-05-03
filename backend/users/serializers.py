@@ -28,7 +28,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Create normal user
         user = User(**validated_data)
         user.set_password(password)
-        user.is_verified = True # Normal users are verified by default
         user.save()
 
         # Default to Survivor role
