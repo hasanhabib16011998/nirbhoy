@@ -54,18 +54,37 @@ const PostStats = ({ post, userId }) => {
 
   return (
     <div className={`flex justify-between items-center z-20 ${containerStyles}`}>
-      <div className="flex gap-2 mr-5">
-        <img
-          src={checkIsLiked(likes, currentUserId) ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"}
-          alt="like"
-          width={20}
-          height={20}
-          onClick={handleLikePost}
-          className="cursor-pointer"
-        />
-        <p className="small-medium lg:base-medium">{likes.length}</p>
+      
+      {/* LEFT SIDE: Grouped Like and Chat */}
+      <div className="flex items-center gap-6">
+        
+        {/* Like Section */}
+        <div className="flex gap-2">
+          <img
+            src={checkIsLiked(likes, currentUserId) ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"}
+            alt="like"
+            width={20}
+            height={20}
+            onClick={handleLikePost}
+            className="cursor-pointer"
+          />
+          <p className="small-medium lg:base-medium">{likes.length}</p>
+        </div>
+
+        {/* Chat Section */}
+        <div className="flex gap-2">
+           <img
+             src="/assets/icons/chat.svg"
+             alt="chat"
+             width={20}
+             height={20}
+             className="cursor-pointer"
+             // TODO: Add an onClick handler for chat if needed
+           />
+        </div>
       </div>
 
+      {/* RIGHT SIDE: Save Section */}
       <div className="flex gap-2">
         {isSaving ? (
              // Simple loader while communicating with backend
