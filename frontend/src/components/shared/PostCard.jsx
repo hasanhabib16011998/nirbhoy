@@ -11,6 +11,8 @@ const PostCard = ({ post }) => {
   const { user } = useUserContext();
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentInput, setCommentInput] = useState("");
   const MAX_CAPTION_LENGTH = 100;
 
   if (!post.author) return;
@@ -37,6 +39,18 @@ const PostCard = ({ post }) => {
 
   // ✅ Get the specific color class for this author's role
   const iconColorClass = roleColorMap[authorRole] || "";
+
+  const handleChatClick = (e) => {
+    e.stopPropagation();
+    setShowComments((prev) => !prev);
+  };
+
+  const handlePostComment = () => {
+    if (!commentInput.trim()) return;
+    // TODO: Add your backend API mutation here to save the comment
+    console.log("Posting comment:", commentInput);
+    setCommentInput("");
+  };
 
   return (
     <div className="post-card">
@@ -119,7 +133,60 @@ const PostCard = ({ post }) => {
         />
       </Link>
 
-      <PostStats post={post} userId={user.id} />
+      <PostStats post={post} userId={user.id} onChatClick={handleChatClick}/>
+
+      {showComments && (
+        <div className="mt-5 pt-5 border-t border-dark-4 animate-in fade-in slide-in-from-top-4 duration-300">
+          
+          {/* List of existing comments (Dummy Data for now) */}
+          <div className="flex flex-col gap-4 mb-5 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+            
+            {/* Single Comment Example */}
+            <div className="flex items-start gap-3">
+              <img src="/assets/icons/profile-placeholder.svg" alt="user" className="w-8 h-8 rounded-full object-cover" />
+              <div className="flex flex-col bg-dark-4 px-4 py-2.5 rounded-2xl rounded-tl-none w-full">
+                <p className="small-semibold text-light-1">Jane Doe</p>
+                <p className="small-regular text-light-2 mt-0.5">This is a great post! Thanks for sharing.</p>
+              </div>
+            </div>
+
+             {/* Single Comment Example */}
+             <div className="flex items-start gap-3">
+              <img src="/assets/icons/profile-placeholder.svg" alt="user" className="w-8 h-8 rounded-full object-cover" />
+              <div className="flex flex-col bg-dark-4 px-4 py-2.5 rounded-2xl rounded-tl-none w-full">
+                <p className="small-semibold text-light-1">Alex Smith</p>
+                <p className="small-regular text-light-2 mt-0.5">Completely agree with this.</p>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Add a Comment Input */}
+          <div className="flex items-center gap-3">
+            <img 
+              src={user.profile_image || "/assets/icons/profile-placeholder.svg"} 
+              alt="current user" 
+              className="w-9 h-9 rounded-full object-cover" 
+            />
+            <div className="flex items-center w-full bg-dark-4 rounded-full px-4 py-1.5">
+              <input
+                type="text"
+                placeholder="Write a comment..."
+                value={commentInput}
+                onChange={(e) => setCommentInput(e.target.value)}
+                className="flex-1 bg-transparent border-none outline-none text-light-1 small-regular placeholder:text-light-4"
+              />
+              <button 
+                onClick={handlePostComment}
+                className="text-primary-500 small-semibold cursor-pointer ml-2 hover:text-primary-600 transition-colors"
+              >
+                Post
+              </button>
+            </div>
+          </div>
+
+        </div>
+      )}
     </div>
   );
 };

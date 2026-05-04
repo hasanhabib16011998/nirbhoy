@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useLikePost, useSavePost } from "@/lib/react-query/queriesAndMutations";
 
 
-const PostStats = ({ post, userId }) => {
+const PostStats = ({ post, userId, onChatClick }) => {
   const location = useLocation();
   
   const likesList = post.likes.map((id) => String(id));
@@ -72,7 +72,7 @@ const PostStats = ({ post, userId }) => {
         </div>
 
         {/* Chat Section */}
-        <div className="flex gap-2">
+        <div className="flex gap-2" onClick={onChatClick}>
            <img
              src="/assets/icons/chat.svg"
              alt="chat"
@@ -81,6 +81,7 @@ const PostStats = ({ post, userId }) => {
              className="cursor-pointer"
              // TODO: Add an onClick handler for chat if needed
            />
+           <p className="small-medium lg:base-medium">7</p>
         </div>
       </div>
 
