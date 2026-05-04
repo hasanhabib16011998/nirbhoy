@@ -27,7 +27,7 @@ class RegisterView(APIView):
             cache_key = f"otp:{user.email}"
             cache.set(cache_key, otp, timeout=300)
             
-            # TODO: Integrate your actual Email or SMS sending logic here
+            # TODO: Integrate actual Email or SMS sending logic here
             print(f"--- MOCK EMAIL --- Sent OTP {otp} to {user.email}")
             
             return Response({
@@ -52,6 +52,14 @@ class ProRegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             role = user.groups.first().name if user.groups.exists() else "Unknown"
+
+            #send OTP
+            otp = str(random.randint(1000, 9999))
+            cache_key = f"otp:{user.email}"
+            cache.set(cache_key, otp, timeout=300)
+            
+            # TODO: Integrate actual Email or SMS sending logic here
+            print(f"--- MOCK EMAIL --- Sent OTP {otp} to {user.email}")
             
             return Response({
                 "message": f"{role} application submitted successfully. Pending admin approval.",
