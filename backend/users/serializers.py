@@ -45,31 +45,31 @@ class ProRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
     
     # Document fields
-    bar_council_id_image = serializers.ImageField(write_only=True, required=False)
-    nid_image = serializers.ImageField(write_only=True, required=False)
+    bar_council_id_file = serializers.FileField(write_only=True, required=False)
+    nid_file = serializers.FileField(write_only=True, required=False)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number', 'address', 'profile_image', 'role', 'bar_council_id_image', 'nid_image']
+        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number', 'address', 'profile_image', 'role', 'bar_council_id_file', 'nid_file']
 
     def validate(self, data):
         role = data.get('role')
         if role not in ['Lawyer', 'Volunteer']:
-            raise serializers.ValidationError({"role": "Invalid professional role."})
+            raise serializers.ValidationError("Invalid professional role")
             
-        if role == 'Lawyer' and not data.get('bar_council_id_image'):
-            raise serializers.ValidationError({"bar_council_id_image": "Bar Council ID Image is required."})
+        if role == 'Lawyer' and not data.get('bar_council_id_file'):
+            raise serializers.ValidationError({"bar_council_id_file":"Bar Council ID Image is required"})
         
-        if role == 'Volunteer' and not data.get('nid_image'):
-            raise serializers.ValidationError({"nid_image": "NID Image is required."})
+        if role == 'Volunteer' and not data.get('nid_file'):
+            raise serializers.ValidationError({"nid_file":"NID Image is required."})
 
         return data
 
     def create(self, validated_data):
         role_name = validated_data.pop('role')
         password = validated_data.pop('password')
-        bar_id_image = validated_data.pop('bar_council_id_image', None)
-        nid_image = validated_data.pop('nid_image', None)
+        bar_council_id_file = validated_data.pop('bar_council_id_file', None)
+        nid_file = validated_data.pop('nid_file', None)
 
         validated_data['username'] = validated_data['email'].split('@')[0]
 
@@ -88,9 +88,9 @@ class ProRegistrationSerializer(serializers.ModelSerializer):
 
         # Create specific profile
         if role_name == 'Lawyer':
-            LawyerProfile.objects.create(user=user, bar_council_id_image=bar_id_image)
+            LawyerProfile.objects.create(user=user, bar_council_id_file=bar_council_id_file)
         elif role_name == 'Volunteer':
-            VolunteerProfile.objects.create(user=user, nid_image=nid_image)
+            VolunteerProfile.objects.create(user=user, nid_file=nid_file)
 
         return user
 

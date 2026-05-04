@@ -10,8 +10,8 @@
 
 16 April 2026
 
-1. OTP Verification.
-2. Signup form should allow multiple format(PDF).
+1. OTP Verification(Done)
+2. Signup form should allow multiple format(PDF).(Done)
 3. Post/legal aid can receive multiple images/videos.
 4. Comments on posts.
 5. User Profile should display all relevant fields.(done)

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 
 class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
@@ -26,7 +27,11 @@ class User(AbstractUser):
 class LawyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lawyer_profile')
     bar_council_id = models.CharField(max_length=50, unique=True)
-    bar_council_id_image = models.ImageField(upload_to='lawyer_docs/')
+    bar_council_id_file = models.FileField(
+        upload_to='lawyer_docs/', 
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
+        null=True, blank=True
+    )
     specialization = models.CharField(max_length=100, default="General")
 
     def __str__(self):
@@ -34,7 +39,11 @@ class LawyerProfile(models.Model):
     
 class VolunteerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='volunteer_profile')
-    nid_image = models.ImageField(upload_to='volunteer_docs/')
+    nid_file = models.FileField(
+        upload_to='volunteer_docs/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
+         null=True, blank=True
+    )
 
     def __str__(self):
         return f"Volunteer {self.user.last_name}"

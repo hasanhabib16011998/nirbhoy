@@ -88,8 +88,8 @@ export default function ProSignUpForm() {
 
     // Append Conditional Documents based on Role
     if (role === "Volunteer") {
-      if (values.nid_image && values.nid_image.length > 0) {
-        formData.append("nid_image", values.nid_image[0]);
+      if (values.nid_file && values.nid_file.length > 0) {
+        formData.append("nid_file", values.nid_file[0]);
       } else {
         toast.error("NID Image is required for Volunteers");
         setIsLoading(false);
@@ -98,8 +98,8 @@ export default function ProSignUpForm() {
     }
 
     if (role === "Lawyer") {
-      if (values.bar_council_id_image && values.bar_council_id_image.length > 0) {
-        formData.append("bar_council_id_image", values.bar_council_id_image[0]);
+      if (values.bar_council_id_file && values.bar_council_id_file.length > 0) {
+        formData.append("bar_council_id_file", values.bar_council_id_file[0]);
       } else {
         toast.error("Bar Council ID is required for Lawyers");
         setIsLoading(false);
@@ -217,7 +217,7 @@ return (
                 <label className="text-sm font-bold text-primary-500">Upload NID Image</label>
                 <Controller
                   control={control}
-                  name="nid_image"
+                  name="nid_file"
                   render={({ field }) => (
                     <FileUploader fieldChange={field.onChange} mediaUrl="" />
                   )}
@@ -230,7 +230,7 @@ return (
                 <label className="text-sm font-bold text-secondary-500">Upload Bar Council ID Image</label>
                 <Controller
                   control={control}
-                  name="bar_council_id_image"
+                  name="bar_council_id_file"
                   render={({ field }) => (
                     <FileUploader fieldChange={field.onChange} mediaUrl="" />
                   )}
