@@ -5,39 +5,81 @@ import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 import PostStats from "./PostStats";
 import { useState } from "react";
+import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 const PostCard = ({ post }) => {
   const { user } = useUserContext();
-
+  const queryClient = useQueryClient();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const MAX_CAPTION_LENGTH = 100;
 
+  // =========================================================
+  // TANSTACK QUERY LOGIC
+  // =========================================================
+
+  // 1. Fetch Comments Query
+  const { data: comments = [], isLoading: isLoadingComments } = useQuery({
+    queryKey: ['comments', post.id],
+    queryFn: async () => {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${API_BASE_URL}/posts/${post.id}/comments/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    },
+    // ✅ This is the magic part: it automatically fetches ONLY when showComments becomes true
+    enabled: showComments, 
+    staleTime: 1000 * 60 * 5, // Cache the comments for 5 minutes
+  });
+
+  const { mutateAsync: postComment, isPending: isPostingComment } = useMutation({
+    mutationFn: async (text) => {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.post(`${API_BASE_URL}/posts/${post.id}/comments/`, 
+        { text },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    },
+    onSuccess: (newComment) => {
+      queryClient.setQueryData(['comments', post.id], (oldComments) => {
+        return [newComment, ...(Array.isArray(oldComments) ? oldComments : [])];
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['comments', post.id] });
+      setCommentInput(""); 
+    },
+    onError: (error) => {
+      console.error("Error posting comment:", error);
+    }
+  });
+
+  // =========================================================
+  // HANDLERS & HELPERS
+  // =========================================================
+
   if (!post.author) return;
 
   const tagsArray = typeof post.tags === 'string' 
-    ? post.tags.split(',').filter(tag => tag.trim() !== '') // Split and remove empty strings
+    ? post.tags.split(',').filter(tag => tag.trim() !== '') 
     : Array.isArray(post.tags) ? post.tags : [];
 
   const shouldTruncate = post.caption?.length > MAX_CAPTION_LENGTH;
-
-  //Determine what text to display based on state
   const displayedCaption = isExpanded || !shouldTruncate 
     ? post.caption 
     : `${post.caption.slice(0, MAX_CAPTION_LENGTH)}...`;
 
-  //showing badge
   const roleColorMap = {
-    admin: "text-red-500",        // Red check for admin
-    lawyer: "text-blue-500",      // Blue check for lawyer
-    volunteer: "text-emerald-500", // Green/Emerald for volunteer
+    admin: "text-red-500",        
+    lawyer: "text-blue-500",      
+    volunteer: "text-emerald-500", 
   };
   const authorRole = post.author?.role?.toLowerCase() || "";
   const shouldShowBadge = roleColorMap.hasOwnProperty(authorRole);
-
-  // ✅ Get the specific color class for this author's role
   const iconColorClass = roleColorMap[authorRole] || "";
 
   const handleChatClick = (e) => {
@@ -45,11 +87,9 @@ const PostCard = ({ post }) => {
     setShowComments((prev) => !prev);
   };
 
-  const handlePostComment = () => {
-    if (!commentInput.trim()) return;
-    // TODO: Add your backend API mutation here to save the comment
-    console.log("Posting comment:", commentInput);
-    setCommentInput("");
+  const handlePostComment = async () => {
+    if (!commentInput.trim() || isPostingComment) return;
+    await postComment(commentInput);
   };
 
   return (
@@ -138,35 +178,40 @@ const PostCard = ({ post }) => {
       {showComments && (
         <div className="mt-5 pt-5 border-t border-dark-4 animate-in fade-in slide-in-from-top-4 duration-300">
           
-          {/* List of existing comments (Dummy Data for now) */}
+          {/* Dynamic Comments List */}
           <div className="flex flex-col gap-4 mb-5 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-            
-            {/* Single Comment Example */}
-            <div className="flex items-start gap-3">
-              <img src="/assets/icons/profile-placeholder.svg" alt="user" className="w-8 h-8 rounded-full object-cover" />
-              <div className="flex flex-col bg-dark-4 px-4 py-2.5 rounded-2xl rounded-tl-none w-full">
-                <p className="small-semibold text-light-1">Jane Doe</p>
-                <p className="small-regular text-light-2 mt-0.5">This is a great post! Thanks for sharing.</p>
+            {isLoadingComments ? (
+              <div className="flex justify-center py-4">
+                <div className="w-6 h-6 rounded-full border-2 border-primary-500 border-t-transparent animate-spin" />
               </div>
-            </div>
-
-             {/* Single Comment Example */}
-             <div className="flex items-start gap-3">
-              <img src="/assets/icons/profile-placeholder.svg" alt="user" className="w-8 h-8 rounded-full object-cover" />
-              <div className="flex flex-col bg-dark-4 px-4 py-2.5 rounded-2xl rounded-tl-none w-full">
-                <p className="small-semibold text-light-1">Alex Smith</p>
-                <p className="small-regular text-light-2 mt-0.5">Completely agree with this.</p>
-              </div>
-            </div>
-
+            ) : comments.length === 0 ? (
+              <p className="text-light-4 small-regular text-center py-2">No comments yet. Be the first to reply!</p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex items-start gap-3">
+                  <img 
+                    src={comment.user.profile_image_url || "/assets/icons/profile-placeholder.svg"} 
+                    alt="user" 
+                    className="w-8 h-8 rounded-full object-cover" 
+                  />
+                  <div className="flex flex-col bg-dark-4 px-4 py-2.5 rounded-2xl rounded-tl-none w-full">
+                    <div className="flex justify-between items-center">
+                      <p className="small-semibold text-light-1">{comment.user.username}</p>
+                      <p className="text-[10px] text-light-3">{multiFormatDateString(comment.created_at)}</p>
+                    </div>
+                    <p className="small-regular text-light-2 mt-0.5 break-words">{comment.text}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
-          {/* Add a Comment Input */}
+          {/* Comment Input */}
           <div className="flex items-center gap-3">
             <img 
               src={user.profile_image || "/assets/icons/profile-placeholder.svg"} 
               alt="current user" 
-              className="w-9 h-9 rounded-full object-cover" 
+              className="w-9 h-9 min-w-9 rounded-full object-cover" 
             />
             <div className="flex items-center w-full bg-dark-4 rounded-full px-4 py-1.5">
               <input
@@ -174,13 +219,18 @@ const PostCard = ({ post }) => {
                 placeholder="Write a comment..."
                 value={commentInput}
                 onChange={(e) => setCommentInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
                 className="flex-1 bg-transparent border-none outline-none text-light-1 small-regular placeholder:text-light-4"
+                disabled={isPostingComment}
               />
               <button 
                 onClick={handlePostComment}
-                className="text-primary-500 small-semibold cursor-pointer ml-2 hover:text-primary-600 transition-colors"
+                disabled={isPostingComment || !commentInput.trim()}
+                className={`small-semibold ml-2 transition-colors ${
+                  commentInput.trim() ? "text-primary-500 hover:text-primary-600 cursor-pointer" : "text-light-4 cursor-not-allowed"
+                }`}
               >
-                Post
+                {isPostingComment ? "..." : "Post"}
               </button>
             </div>
           </div>

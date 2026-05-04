@@ -81,7 +81,7 @@ const PostStats = ({ post, userId, onChatClick }) => {
              className="cursor-pointer"
              // TODO: Add an onClick handler for chat if needed
            />
-           <p className="small-medium lg:base-medium">7</p>
+           <p className="small-medium lg:base-medium">{ post.comments_count }</p>
         </div>
       </div>
 

@@ -13,7 +13,7 @@
 1. OTP Verification(Done)
 2. Signup form should allow multiple format(PDF).(Done)
 3. Post/legal aid can receive multiple images/videos.
-4. Comments on posts.
+4. Comments on posts.(Done)
 5. User Profile should display all relevant fields.(done)
 6. Volunteer dashboard should show all contact details of user (SOS). (done)
 7. Volunteer dashboard should display previous SoS responses. (done)

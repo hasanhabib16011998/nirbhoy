@@ -106,3 +106,38 @@ class UserSavedPostsView(generics.ListAPIView):
 
     def get_queryset(self):
         return SavedPost.objects.filter(user=self.request.user).order_by('-created_at')
+    
+
+class PostCommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, post_id):
+        # 1. Fetch the post, return 404 automatically if it doesn't exist
+        post = get_object_or_404(Post, id=post_id)
+
+        # 2. Use the GenericRelation to fetch all comments for this specific post
+        comments = post.comments.all()
+        
+        # 3. Serialize and return
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, post_id):
+        # 1. Fetch the post
+        post = get_object_or_404(Post, id=post_id)
+
+        # 2. Validate the comment text
+        text = request.data.get('text')
+        if not text or not text.strip():
+            return Response({"error": "Comment text cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 3. Create the comment using the GenericRelation.
+        # Django automatically fills in the 'content_type' and 'object_id' for you!
+        comment = post.comments.create(
+            user=request.user,
+            text=text.strip()
+        )
+        
+        # 4. Return the newly created comment
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
