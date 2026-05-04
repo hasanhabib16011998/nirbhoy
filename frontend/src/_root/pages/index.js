@@ -13,5 +13,6 @@ export { default as SosDetails } from "./SosDetails";
 export { default as AdminDashboard } from "./UserDashboard";
 export { default as LawyerDashboard } from "./LawyerDashboard";
 export { default as VolunteerDashboard } from "./VolunteerDashboard";
+export { default as AboutUs } from "./AboutUs";
 
 

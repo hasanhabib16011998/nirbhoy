@@ -13,7 +13,8 @@ import {
   UpdateProfile,
   AllUsers,
   SosDashboard,
-  SosDetails
+  SosDetails,
+  AboutUs
 } from "@/_root/pages";
 import RootLayout from './_root/RootLayout';
 import './App.css';
@@ -45,6 +46,7 @@ const App = () => {
             <Route path="/update-profile/:id" element={<UpdateProfile />} />
             <Route path="/sos" element={<SosDashboard />} />
             <Route path="/sos/:id" element={<SosDetails />} />
+            <Route path="/about-us" element={<AboutUs />} />
             </Route>
         </Routes>
         <Toaster position="top-center"/>

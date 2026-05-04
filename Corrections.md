@@ -19,6 +19,6 @@
 7. Volunteer dashboard should display previous SoS responses. (done)
 8. Normal users dashboard should include previous Sos and lawyers tickets history. (done)
 9. SoS review from both user and volunteer(reviewed only by admin).
-10. Contact us/ about us section.
+10. Contact us/ about us section.(Done)
 11. SoS should expire after 3 hours.
 12. Icon/badge for different user types. (done)
