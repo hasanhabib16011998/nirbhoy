@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from posts.models import Attachment
+from django.contrib.contenttypes.fields import GenericRelation
 
 User = get_user_model()
 
@@ -14,3 +16,26 @@ class SosAlert(models.Model):
 
     def __str__(self):
         return f"SOS: {self.user.username} at {self.timestamp}"
+    
+
+
+class LegalAidApplication(models.Model):
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='legal_aid_applications')
+    caption = models.CharField(max_length=255)
+    description = models.TextField()
+    
+    status_choices = [
+        ('Pending', 'Pending'),
+        ('Reviewed', 'Reviewed'),
+        ('Accepted', 'Accepted'),
+        ('Closed', 'Closed'),
+    ]
+    status = models.CharField(max_length=20, choices=status_choices, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # --- Reverse Generic Relation ---
+    # This allows us to do: application.attachments.all() or application.attachments.create(...)
+    attachments = GenericRelation(Attachment)
+
+    def __str__(self):
+        return f"{self.applicant.username} - {self.caption[:30]}"

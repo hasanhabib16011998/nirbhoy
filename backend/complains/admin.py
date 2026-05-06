@@ -1,7 +1,8 @@
 # emergencies/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import SosAlert
+from .models import SosAlert, LegalAidApplication
+from posts.admin import AttachmentInline
 
 @admin.register(SosAlert)
 class SosAlertAdmin(admin.ModelAdmin):
@@ -56,3 +57,18 @@ class SosAlertAdmin(admin.ModelAdmin):
         return "No location data available."
     
     map_view.short_description = "Live Map"
+
+@admin.register(LegalAidApplication)
+class LegalAidApplicationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'applicant', 'caption', 'status', 'created_at')
+    list_display_links = ('id', 'applicant', 'caption')
+    list_filter = ('status', 'created_at')
+    
+    # Search across the application details AND the applicant's user data
+    search_fields = ('caption', 'description', 'applicant__username', 'applicant__email')
+    
+    # Dates should usually be read-only in the admin
+    readonly_fields = ('created_at',)
+    
+    inlines = [AttachmentInline]
+    

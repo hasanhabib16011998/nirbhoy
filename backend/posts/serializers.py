@@ -12,6 +12,11 @@ class UserTinySerializer(serializers.ModelSerializer):
     def get_role(self, obj):
         # 'obj' represents the User instance
         return obj.groups.first().name if obj.groups.exists() else "Survivor"
+    
+class AttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ['id', 'file', 'uploaded_at']
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserTinySerializer(read_only=True)

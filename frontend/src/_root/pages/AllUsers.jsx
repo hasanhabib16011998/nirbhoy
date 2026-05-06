@@ -2,6 +2,8 @@ import { toast } from "sonner"
 import Loader from "@/components/shared/Loader";
 import UserCard from "@/components/shared/UserCard";
 import { useGetUsers } from "@/lib/react-query/queriesAndMutations";
+import { Link } from "react-router-dom"; // ✅ Added Link
+import { Button } from "@/components/ui/button"; // ✅ Added Button
 
 const AllUsers = () => {
 
@@ -9,14 +11,23 @@ const AllUsers = () => {
 
   if (isErrorCreators) {
     toast({ title: "Something went wrong." });
-    
     return;
   }
 
   return (
     <div className="common-container">
       <div className="user-container">
-        <h2 className="h3-bold md:h2-bold text-left w-full">Verified Lawyers</h2>
+        
+        {/* ✅ Updated Header: Flex container to hold Title and Button */}
+        <div className="flex justify-between items-center w-full">
+          <h2 className="h3-bold md:h2-bold text-left">Verified Lawyers</h2>
+          <Link to="/legal-aid">
+            <Button className="shad-button_primary px-6 py-6">
+              Apply for Legal Aid
+            </Button>
+          </Link>
+        </div>
+
         {isLoading && !creators ? (
           <Loader />
         ) : (

@@ -1,7 +1,8 @@
 # emergencies/serializers.py
 from rest_framework import serializers
-from .models import SosAlert
+from .models import SosAlert, LegalAidApplication
 from users.models import User
+from posts.serializers import AttachmentSerializer
 
 class SosAlertSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +24,12 @@ class SosAlertDetailsSerializer(serializers.ModelSerializer):
         model = SosAlert
         fields = ['id', 'user', 'latitude', 'longitude', 'message', 'timestamp', 'is_active', 'responders']
         read_only_fields = ['user', 'timestamp', 'id']
+
+class LegalAidApplicationSerializer(serializers.ModelSerializer):
+    # This matches the 'attachments = GenericRelation(Attachment)' variable name in the model
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = LegalAidApplication
+        fields = ['id', 'applicant', 'caption', 'description', 'status', 'attachments', 'created_at']
+        read_only_fields = ['applicant', 'status', 'created_at']

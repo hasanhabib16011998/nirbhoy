@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .models import SosAlert
-from .serializers import SosAlertSerializer, SosAlertDetailsSerializer
+from .serializers import SosAlertSerializer, SosAlertDetailsSerializer, LegalAidApplicationSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class ReceiveSosAPIView(APIView):
     # This ensures only logged-in users can trigger an SOS
@@ -110,3 +111,44 @@ class SOSDashboardAPIView(APIView):
             "active": active_serializer.data,
             "history": history_serializer.data
         }, status=status.HTTP_200_OK)
+    
+class ApplyForLegalAidView(APIView):
+    """
+    POST API to create a Legal Aid Application with multiple generic attachments.
+    Written using APIView for explicit control over the request flow.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    # Crucial: Tells Django to expect form data (text + files) instead of raw JSON
+    parser_classes = [MultiPartParser, FormParser] 
+
+    def post(self, request, *args, **kwargs):
+        # 1. Pass the incoming data to the serializer
+        serializer = LegalAidApplicationSerializer(data=request.data)
+        
+        # 2. Check if the text data is valid
+        if serializer.is_valid():
+            
+            # 3. Save the application and attach the currently logged-in user
+            application = serializer.save(applicant=request.user)
+            
+            # 4. Extract the list of files from the request
+            # 'attachments' is the key your React frontend must use to append the files
+            files = request.FILES.getlist('attachments')
+            
+            # 5. Loop through the files and create the generic attachments
+            # Since we used GenericRelation, Django handles ContentType/ObjectID automatically!
+            for file in files:
+                application.attachments.create(file=file)
+                
+            # 6. Return success response with the serialized data (which now includes the files)
+            return Response(
+                {
+                    "message": "Legal Aid Application submitted successfully.", 
+                    "data": serializer.data
+                }, 
+                status=status.HTTP_201_CREATED
+            )
+            
+        # 7. If validation fails, return the errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

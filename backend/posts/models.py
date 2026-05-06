@@ -2,6 +2,7 @@ from django.db import models
 from users.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import FileExtensionValidator
 
 
 class Comment(models.Model):
@@ -54,5 +55,27 @@ class SavedPost(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.post.id}"
+    
+
+class Attachment(models.Model):
+    """A generic model to handle file uploads for ANY other model in the app."""
+    file = models.FileField(
+        upload_to='attachments/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])]
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    # --- Generic Relation Fields ---
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]), # Optimizes queries
+        ]
+
+    def __str__(self):
+        return f"Attachment {self.id} for {self.content_type.model} {self.object_id}"
     
 
