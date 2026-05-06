@@ -21,7 +21,8 @@ import {
   getSavedPosts,
   getUsersByGroup,
   updateUser,
-  getSosData
+  getSosData,
+  fetchLegalAidDashboard
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -181,5 +182,12 @@ export const useGetSosData = () => {
     queryKey: ['sosDashboardData'],
     queryFn: getSosData,
     refetchInterval: 10000, // ✅ Automatically polls the backend every 10 seconds!
+  });
+};
+
+export const useGetLegalAidData = () => {
+  return useQuery({
+    queryKey: ['legalAidDashboard'],
+    queryFn: fetchLegalAidDashboard,
   });
 };

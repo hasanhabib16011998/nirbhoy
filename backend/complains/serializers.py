@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import SosAlert, LegalAidApplication
 from users.models import User
 from posts.serializers import AttachmentSerializer
+from posts.serializers import UserTinySerializer
 
 class SosAlertSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,3 +34,24 @@ class LegalAidApplicationSerializer(serializers.ModelSerializer):
         model = LegalAidApplication
         fields = ['id', 'applicant', 'caption', 'description', 'status', 'attachments', 'created_at']
         read_only_fields = ['applicant', 'status', 'created_at']
+
+class LegalAidDashbordSerializer(serializers.ModelSerializer):
+    # Nesting the tiny serializers so the frontend gets full objects, not just IDs
+    applicant = UserTinySerializer(read_only=True)
+    responders = UserTinySerializer(many=True, read_only=True)
+    
+    # Matches the 'attachments = GenericRelation(Attachment)' in your model
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = LegalAidApplication
+        fields = [
+            'id', 
+            'applicant', 
+            'caption', 
+            'description', 
+            'status', 
+            'responders', 
+            'attachments', 
+            'created_at'
+        ]

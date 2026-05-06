@@ -1,5 +1,5 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+import axios from "axios";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 export async function createUserAccount(user) {
   try {
@@ -458,3 +458,21 @@ export async function getSosData() {
 
   return await response.json();
 }
+
+export const fetchLegalAidDashboard = async () => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    if (!token) throw new Error("No authentication token found");
+
+    const response = await axios.get(`${API_BASE_URL}/complains/legal-aid/dashboard/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching legal aid data:", error);
+    // You must re-throw the error so TanStack Query can catch it and set isError to true
+    throw error; 
+  }
+};

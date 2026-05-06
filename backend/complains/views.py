@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from .models import SosAlert
-from .serializers import SosAlertSerializer, SosAlertDetailsSerializer, LegalAidApplicationSerializer
+from .models import SosAlert, LegalAidApplication
+from .serializers import SosAlertSerializer, SosAlertDetailsSerializer, LegalAidApplicationSerializer, LegalAidDashbordSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 
 class ReceiveSosAPIView(APIView):
@@ -152,3 +152,44 @@ class ApplyForLegalAidView(APIView):
             
         # 7. If validation fails, return the errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class LegalAidDashboardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        # 1. Safely determine the user's role (convert to lowercase for safe checking)
+        role = user.groups.first().name if user.groups.exists() else "survivor"
+        
+        # Define which roles are allowed to respond to emergencies
+        responder_roles = ['Lawyer', 'Survivor']
+
+        # 2. Dynamically set the querysets based on the role
+        if role in responder_roles:
+            if role == 'Lawyer':
+                # 🚨 VOLUNTEER VIEW
+                # Active: All currently active emergencies
+                active_aids = LegalAidApplication.objects.filter(status='Pending').order_by('-created_at')
+                
+                # History: Emergencies where THIS Lawyer is in the responders list
+                aids_history = LegalAidApplication.objects.filter(responders=user).exclude(status='Pending').order_by('-created_at')
+            
+            else:
+                # 🛡️ SURVIVOR VIEW
+                # Active: Only the active emergencies created by THIS user
+                active_aids = LegalAidApplication.objects.filter(applicant=user, status='Pending').order_by('-created_at')
+                
+                # History: Emergencies created by THIS user that are now resolved (is_active=False)
+                aids_history = LegalAidApplication.objects.filter(applicant=user).exclude(status='Pending').order_by('-created_at')
+
+        # 3. Serialize the data
+        active_serializer = LegalAidDashbordSerializer(active_aids, many=True)
+        history_serializer = LegalAidDashbordSerializer(aids_history, many=True)
+        
+        # 4. Return combined data
+        return Response({
+            "active": active_serializer.data,
+            "history": history_serializer.data
+        }, status=status.HTTP_200_OK)
