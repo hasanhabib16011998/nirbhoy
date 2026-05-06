@@ -22,3 +22,8 @@
 10. Contact us/ about us section.(Done)
 11. SoS should expire after 3 hours.
 12. Icon/badge for different user types. (done)
+
+5th may, 2026
+1. Login page a about us link
+2. Legal aid (token, description, User contact details, title, image optional)
+3. People section will include only lawyers (Done)

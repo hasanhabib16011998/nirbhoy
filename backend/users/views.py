@@ -203,7 +203,7 @@ class UserListView(generics.ListAPIView):
 
     def get_queryset(self):
         # 1. Order by creation date descending (newest first)
-        queryset = User.objects.all().order_by('-date_joined')
+        queryset = User.objects.filter(lawyer_profile__isnull=False).order_by('-date_joined')
         
         # 2. Check for 'limit' parameter in the URL
         limit = self.request.query_params.get('limit')

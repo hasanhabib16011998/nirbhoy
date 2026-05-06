@@ -38,7 +38,7 @@ const App = () => {
             <Route index element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/saved" element={<Saved />} />
-            <Route path="/all-users" element={<AllUsers />} />
+            <Route path="/lawyers" element={<AllUsers />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/update-post/:id" element={<EditPost />} />
             <Route path="/posts/:id" element={<PostDetails />} />

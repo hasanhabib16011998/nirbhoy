@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post
+from .models import Post, Comment
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
@@ -19,3 +19,11 @@ class PostAdmin(admin.ModelAdmin):
     def short_caption(self, obj):
         return obj.caption[:50] + "..." if len(obj.caption) > 50 else obj.caption
     short_caption.short_description = 'Caption'
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    # Columns to show in the list view
+    list_display = ('user', 'text', 'created_at')
+    
+    
