@@ -136,8 +136,7 @@ export default function ProSignUpForm() {
   };
 
 return (
-    <div className="flex-center flex-col p-6 w-full max-w-2xl mx-auto">
-      <img src="/assets/images/logo.png" alt="logo" className="mb-6" />
+    <>
 
       {!showOtp ? (
         <div className="registration-form w-full">
@@ -286,6 +285,6 @@ return (
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

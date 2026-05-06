@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom"; // ✅ Import useLocation
 
 import Topbar from "@/components/shared/Topbar";
 import Bottombar from "@/components/shared/Bottombar";
@@ -11,8 +11,9 @@ import { useUserContext } from "@/context/AuthContext";
 const RootLayout = () => {
   const { isAuthenticated, isLoading } = useUserContext();
   const token = localStorage.getItem("accessToken");
+  const location = useLocation();
 
-  // 1. Show a loader while the app is verifying the user's token with Django
+  // 1. Show a loader while verifying the token
   if (isLoading) {
     return (
       <div className="flex items-center justify-center w-full h-screen bg-dark-1">
@@ -21,12 +22,21 @@ const RootLayout = () => {
     );
   }
 
-  // 2. If there is no token, OR the user is definitely not authenticated, kick them to login
+  // 2. Handle Unauthenticated Users
   if (!token || (!isLoading && !isAuthenticated)) {
+    // ✅ If they are specifically visiting About Us, let them see it WITHOUT the sidebar
+    if (location.pathname === "/about-us") {
+      return (
+        <section className="flex flex-1 h-full bg-dark-1">
+          <Outlet />
+        </section>
+      );
+    }
+    // Otherwise, direct them to login
     return <Navigate to="/sign-in" replace />;
   }
 
-  // 3. If they ARE authenticated, render your exact layout as normal!
+  // 3. Handle Authenticated Users (Render the exact layout as normal)
   return (
     <div className="w-full md:flex">
       <Topbar />

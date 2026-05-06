@@ -64,9 +64,7 @@ export default function SignInForm() {
 
   return (
     // 2. Removed the <Form> wrapper
-    <div className="sm:w-420 flex-center flex-col">
-      <img src="/assets/images/logo.png" alt="logo" />
-
+    <>
       <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">
         Log in to your account
       </h2>
@@ -129,6 +127,6 @@ export default function SignInForm() {
           </Link>
         </p>
       </form>
-    </div>
+    </>
   )
 }

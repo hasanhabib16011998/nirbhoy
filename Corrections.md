@@ -24,6 +24,6 @@
 12. Icon/badge for different user types. (done)
 
 5th may, 2026
-1. Login page a about us link
+1. Login page a about us link(Done)
 2. Legal aid (token, description, User contact details, title, image optional)
 3. People section will include only lawyers (Done)
