@@ -477,3 +477,16 @@ export const fetchLegalAidDashboard = async () => {
     throw error; 
   }
 };
+
+export const fetchLegalAidById = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const response = await axios.get(`${API_BASE_URL}/complains/legal-aid/${id}/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching case details:", error);
+    throw error;
+  }
+};

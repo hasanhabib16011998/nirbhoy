@@ -9,4 +9,5 @@ urlpatterns = [
     path('dashboard/', SOSDashboardAPIView.as_view(), name='sos-dashboard'),
     path('legal-aid/apply/', ApplyForLegalAidView.as_view(), name='legal-aid'),
     path('legal-aid/dashboard/', LegalAidDashboardAPIView.as_view(), name='legal-aid-dashboard'),
+    path('legal-aid/<int:pk>/', LegalAidDetailAPIView.as_view(), name='legal-aid-detail'),
 ]

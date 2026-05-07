@@ -4,8 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .models import SosAlert, LegalAidApplication
-from .serializers import SosAlertSerializer, SosAlertDetailsSerializer, LegalAidApplicationSerializer, LegalAidDashbordSerializer
+from .serializers import SosAlertSerializer, SosAlertDetailsSerializer, LegalAidApplicationSerializer, LegalAidDashbordSerializer, LegalAidDetailsSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import generics
 
 class ReceiveSosAPIView(APIView):
     # This ensures only logged-in users can trigger an SOS
@@ -194,3 +195,14 @@ class LegalAidDashboardAPIView(APIView):
             "active": active_serializer.data,
             "history": history_serializer.data
         }, status=status.HTTP_200_OK)
+    
+class LegalAidDetailAPIView(generics.RetrieveAPIView):
+    queryset = LegalAidApplication.objects.all()
+    serializer_class = LegalAidDetailsSerializer
+    permission_classes = [IsAuthenticated]
+    
+    # We pass the request context so image URLs are absolute!
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context

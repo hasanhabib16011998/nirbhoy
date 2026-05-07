@@ -168,3 +168,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_following_count(self, obj):
         return 0
+    
+class UserProfileSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ReadOnlyField(source='get_full_image_url')
+    role = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'phone_number', 'email', 'first_name', 'last_name', 'profile_image', 'role' ]
+        
+    def get_role(self, obj):
+        # 'obj' represents the User instance
+        return obj.groups.first().name if obj.groups.exists() else "Survivor"

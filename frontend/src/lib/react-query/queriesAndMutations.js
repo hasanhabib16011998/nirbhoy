@@ -22,7 +22,8 @@ import {
   getUsersByGroup,
   updateUser,
   getSosData,
-  fetchLegalAidDashboard
+  fetchLegalAidDashboard,
+  fetchLegalAidById
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -189,5 +190,13 @@ export const useGetLegalAidData = () => {
   return useQuery({
     queryKey: ['legalAidDashboard'],
     queryFn: fetchLegalAidDashboard,
+  });
+};
+
+export const useGetLegalAidById = (id) => {
+  return useQuery({
+    queryKey: ['legalAidDetails', id],
+    queryFn: () => fetchLegalAidById(id),
+    enabled: !!id, // Only run the query if an ID actually exists
   });
 };

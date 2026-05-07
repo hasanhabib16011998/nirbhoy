@@ -15,5 +15,6 @@ export { default as LawyerDashboard } from "./LawyerDashboard";
 export { default as VolunteerDashboard } from "./VolunteerDashboard";
 export { default as AboutUs } from "./AboutUs";
 export { default as LegalAid } from "./LegalAid";
+export { default as LegalAidDetails } from "./LegalAidDetails";
 
 
