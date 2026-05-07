@@ -160,20 +160,21 @@ class LegalAidDashboardAPIView(APIView):
     def get(self, request):
         user = request.user
         
-        # 1. Safely determine the user's role (convert to lowercase for safe checking)
-        role = user.groups.first().name if user.groups.exists() else "survivor"
+        # 1. FIXED: Actually convert to lowercase for safe checking!
+        role = user.groups.first().name.lower() if user.groups.exists() else "survivor"
         
-        # Define which roles are allowed to respond to emergencies
-        responder_roles = ['Lawyer', 'Survivor']
+        # Define roles in lowercase to match
+        responder_roles = ['lawyer', 'survivor']
+
+        # Fallback empty querysets to prevent UnboundLocalError if a user has a weird role
+        active_aids = LegalAidApplication.objects.none()
+        aids_history = LegalAidApplication.objects.none()
 
         # 2. Dynamically set the querysets based on the role
         if role in responder_roles:
-            if role == 'Lawyer':
-                # 🚨 VOLUNTEER VIEW
-                # Active: All currently active emergencies
+            if role == 'lawyer':
+                # 🚨 LAWYER VIEW
                 active_aids = LegalAidApplication.objects.filter(status='Pending').order_by('-created_at')
-                
-                # History: Emergencies where THIS Lawyer is in the responders list
                 aids_history = LegalAidApplication.objects.filter(responders=user).exclude(status='Pending').order_by('-created_at')
             
             else:
@@ -181,7 +182,7 @@ class LegalAidDashboardAPIView(APIView):
                 # Active: Only the active emergencies created by THIS user
                 active_aids = LegalAidApplication.objects.filter(applicant=user, status='Pending').order_by('-created_at')
                 
-                # History: Emergencies created by THIS user that are now resolved (is_active=False)
+                # History: Emergencies created by THIS user that are now resolved
                 aids_history = LegalAidApplication.objects.filter(applicant=user).exclude(status='Pending').order_by('-created_at')
 
         # 3. Serialize the data

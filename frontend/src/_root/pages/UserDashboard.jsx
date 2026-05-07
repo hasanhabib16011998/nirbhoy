@@ -1,10 +1,17 @@
 // src/components/dashboards/UserDashboard.jsx
 import React from 'react';
 import SosView from './SosView';
-import { useGetSosData } from '@/lib/react-query/queriesAndMutations'; 
+import { useGetSosData, useGetLegalAidData } from '@/lib/react-query/queriesAndMutations';
+import LegalAidView from './LegalAidView';
 
 const UserDashboard = () => {
-  const { data, isLoading, isError, error } = useGetSosData(); 
+  const { data, isLoading, isError, error } = useGetSosData();
+  const { 
+    data: aidData, 
+    isLoading: aidIsLoading, 
+    isError: aidIsError, 
+    error: aidError 
+  } = useGetLegalAidData();
 
   return (
     <div className="flex flex-col gap-8">
@@ -25,6 +32,17 @@ const UserDashboard = () => {
         isLoading={isLoading}
         isError={isError}
         error={error}
+      />
+
+      <LegalAidView 
+          title="Pro Bono Case Requests"
+          description="Submit legal aid applications."
+          emptyActiveText="There are no pending legal aid applications at the moment."
+          emptyHistoryText="You haven't submitted any cases yet."
+          data={aidData}
+          isLoading={aidIsLoading}
+          isError={aidIsError}
+          error={aidError}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom"; // ✅ Import useLocation
+import { Navigate, Outlet, useLocation } from "react-router-dom"; 
 
 import Topbar from "@/components/shared/Topbar";
 import Bottombar from "@/components/shared/Bottombar";
@@ -24,25 +24,26 @@ const RootLayout = () => {
 
   // 2. Handle Unauthenticated Users
   if (!token || (!isLoading && !isAuthenticated)) {
-    // ✅ If they are specifically visiting About Us, let them see it WITHOUT the sidebar
     if (location.pathname === "/about-us") {
       return (
-        <section className="flex flex-1 h-full bg-dark-1">
+        <section className="flex flex-1 h-full bg-dark-1 overflow-y-auto">
           <Outlet />
         </section>
       );
     }
-    // Otherwise, direct them to login
     return <Navigate to="/sign-in" replace />;
   }
 
-  // 3. Handle Authenticated Users (Render the exact layout as normal)
+  // 3. Handle Authenticated Users
   return (
-    <div className="w-full md:flex">
+    // ✅ 1. Added `md:h-screen` and `overflow-hidden` so the main window stops scrolling
+    <div className="w-full md:flex md:h-screen overflow-hidden">
+      
       <Topbar />
       <LeftSidebar />
 
-      <section className="flex flex-1 h-full">
+      {/* ✅ 2. Added `overflow-y-auto` and `custom-scrollbar` so ONLY this section scrolls */}
+      <section className="flex flex-1 h-full overflow-y-auto custom-scrollbar">
         <Outlet />
       </section>
       
