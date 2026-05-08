@@ -49,10 +49,23 @@ const PostForm = ({ post, action }) => {
 
     // ACTION = CREATE
     try {
-      const newPost = await createPost({
-        ...value,
-        userId: user.id, 
-      });
+      const formData = new FormData();
+      
+      // ✅ 2. Append standard text fields
+      formData.append("caption", value.caption || "");
+      formData.append("location", value.location || "");
+      formData.append("tags", value.tags || "");
+
+      // ✅ 3. Loop through files and append them to "attachments"
+      if (value.file && value.file.length > 0) {
+        value.file.forEach((f) => {
+          // The key MUST be "attachments" to match Django's request.FILES.getlist('attachments')
+          formData.append("attachments", f); 
+        });
+      }
+
+      // ✅ 4. Send the formData to your API
+      const newPost = await createPost(formData);
 
       if (!newPost) {
         toast.error("Create post failed. Please try again.");

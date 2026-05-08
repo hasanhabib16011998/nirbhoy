@@ -138,34 +138,23 @@ export async function signOutAccount() {
   }
 }
 
-export async function createPost(post) {
+export async function createPost(formData) {
   try {
     const token = localStorage.getItem("accessToken");
     if (!token) throw new Error("No access token found");
 
-    // 1. Create FormData object
-    const formData = new FormData();
+    // We don't need to build FormData here anymore, 
+    // because your onSubmit function already did it perfectly!
 
-    // 2. Append text fields
-    formData.append("caption", post.caption);
-    formData.append("location", post.location || "");
-    formData.append("tags", post.tags || "");
-
-    // 3. Append the File
-    // Note: post.file is likely a FileList or array from react-dropzone/hook-form
-    if (post.file && post.file.length > 0) {
-      formData.append("image", post.file[0]);
-    }
-
-    // 4. Send Request
+    // 1. Send Request directly with the received formData
     const response = await fetch(`${API_BASE_URL}/posts/create/`, {
       method: "POST",
       headers: {
         // NOTE: Do NOT set "Content-Type": "multipart/form-data" manually.
-        // The browser sets it automatically with the correct boundary when using FormData.
+        // The browser sets it automatically with the correct boundary.
         Authorization: `Bearer ${token}`,
       },
-      body: formData,
+      body: formData, // ✅ Pass the formData directly here
     });
 
     if (!response.ok) {

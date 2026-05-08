@@ -7,18 +7,32 @@ from .serializers import *
 from .models import *
 from django.shortcuts import get_object_or_404
 
+
 class CreatePostView(APIView):
     permission_classes = [IsAuthenticated]
-    # These parsers allow Django to read image files and form data
     parser_classes = [parsers.MultiPartParser, parsers.FormParser]
 
     def post(self, request):
         serializer = PostSerializer(data=request.data, context={'request': request})
+        
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # 1. Save the main Post (this triggers the `create` method in the serializer)
+            post = serializer.save()
+            
+            # 2. Extract the list of files from the request
+            # Make sure your frontend uses 'attachments' as the key when appending to FormData
+            files = request.FILES.getlist('attachments')
+            
+            # 3. Create generic attachments for this specific post
+            for file in files:
+                post.attachments.create(file=file)
+                
+            # 4. Re-serialize the post so the response includes the newly created attachments
+            response_serializer = PostSerializer(post, context={'request': request})
+            
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class RecentPostsView(generics.ListAPIView):
     # Retrieve all posts, order by created_at descending (-), and take the first 20

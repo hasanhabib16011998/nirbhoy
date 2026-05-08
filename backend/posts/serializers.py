@@ -24,10 +24,11 @@ class PostSerializer(serializers.ModelSerializer):
     
     is_saved = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
+    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'caption', 'image', 'location','is_verified', 'tags', 'likes', 'comments_count', 'is_saved', 'created_at', 'updated_at']
+        fields = ['id', 'author', 'caption', 'attachments', 'location','is_verified', 'tags', 'likes', 'comments_count', 'is_saved', 'created_at', 'updated_at']
 
     def get_is_saved(self, obj):
         request = self.context.get('request')
