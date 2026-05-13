@@ -170,12 +170,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return 0
     
 class UserProfileSerializer(serializers.ModelSerializer):
-    profile_image = serializers.ReadOnlyField(source='get_full_image_url')
+    profile_image = serializers.ImageField(required=False, allow_null=True)
+    full_image_url = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['id', 'username', 'phone_number', 'email', 'first_name', 'last_name', 'profile_image', 'role' ]
+        fields = ['id', 'username', 'phone_number', 'email', 'first_name', 'last_name', 'profile_image','full_image_url','role','address' ]
         
     def get_role(self, obj):
         # 'obj' represents the User instance
         return obj.groups.first().name if obj.groups.exists() else "Survivor"
+    
+    def get_full_image_url(self, obj):
+            return obj.get_full_image_url

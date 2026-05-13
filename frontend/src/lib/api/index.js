@@ -384,20 +384,26 @@ export async function getUserById(userId) {
   }
 }
 
-export async function updateUser(userData) {
+export async function updateUser({ id, userData }) {
   try {
     const token = localStorage.getItem("accessToken");
-    // Using PATCH so we only update the fields we send
-    const response = await fetch(`${API_BASE_URL}/users/${userData.id}/`, {
+
+    const response = await fetch(`${API_BASE_URL}/users/${id}/`, {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
+        // The browser will set it automatically for FormData.
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(userData),
+      body: userData,
     });
 
-    if (!response.ok) throw new Error("Failed to update profile");
+    if (!response.ok) {
+      // Log the error body to see what Django is complaining about
+      const errorData = await response.json();
+      console.error("Server Error Details:", errorData);
+      throw new Error("Failed to update profile");
+    }
+
     return await response.json();
   } catch (error) {
     console.log("Update User Error:", error);

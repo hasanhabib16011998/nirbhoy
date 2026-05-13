@@ -168,7 +168,7 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (user) => updateUser(user),
+    mutationFn: (data) => updateUser(data),
     onSuccess: (data) => {
       // This tells React Query to immediately refresh the profile page with new data
       queryClient.invalidateQueries({

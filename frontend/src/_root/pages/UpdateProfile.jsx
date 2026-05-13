@@ -55,8 +55,8 @@ export default function UpdateProfile() {
       });
       
       // Set the image preview using the clean URL from your Django backend
-      if (currentUser.imageUrl) {
-        setPreviewUrl(currentUser.imageUrl);
+      if (currentUser.profile_image) {
+        setPreviewUrl(currentUser.profile_image);
       }
     }
   }, [currentUser, reset]);
