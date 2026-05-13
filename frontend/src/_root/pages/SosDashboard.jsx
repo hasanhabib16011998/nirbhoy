@@ -25,7 +25,6 @@ const SosDashboard = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [backendResponse, setBackendResponse] = useState("");
   
-  // NEW STATE: Store coordinates and message
   const [currentLocation, setCurrentLocation] = useState(null);
   // ✅ Add state for the SOS message details
   const [details, setDetails] = useState(""); 
@@ -34,6 +33,34 @@ const SosDashboard = () => {
   const [activeAlert, setActiveAlert] = useState(null);
   const token = localStorage.getItem("accessToken");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+  useEffect(() => {
+    const fetchActiveSos = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/complains/active/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Restore the state from the backend data
+          setActiveAlert(data);
+          setDetails(data.message || "");
+          setIsTracking(true);
+          
+          // CRITICAL: Set this to true so we don't accidentally POST a new SOS
+          hasTriggeredBackend.current = true; 
+          
+          // Resume local GPS tracking
+          startGpsTracking(); 
+        }
+      } catch (error) {
+        console.error("Error fetching active SOS:", error);
+      }
+    };
+
+    fetchActiveSos();
+  }, []); // Run once on mount
 
   // ✅ Accept 'message' as an argument
   const sendInitialSosToBackend = async (latitude, longitude, message) => {
@@ -67,30 +94,23 @@ const SosDashboard = () => {
     }
   };
 
-  const startEmergency = () => {
+  const startGpsTracking = () => {
     if (!("geolocation" in navigator)) {
       setErrorMsg("Geolocation is not supported by your browser.");
       return;
     }
 
-    setIsTracking(true);
-    setErrorMsg("");
-    setBackendResponse("");
-    setActiveAlert(null);
-    hasTriggeredBackend.current = false; 
-
     const id = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        
         const formattedLat = parseFloat(latitude.toFixed(6));
         const formattedLng = parseFloat(longitude.toFixed(6));
 
         setCurrentLocation({ lat: formattedLat, lng: formattedLng });
         
+        // Only trigger the POST request if we haven't done it yet
         if (!hasTriggeredBackend.current) {
           hasTriggeredBackend.current = true;
-          // ✅ Pass the current 'details' state to the backend call
           sendInitialSosToBackend(formattedLat, formattedLng, details);
         }
       },
@@ -105,16 +125,39 @@ const SosDashboard = () => {
     setWatchId(id);
   };
 
-  const stopEmergency = () => {
+  const startEmergency = () => {
+    setIsTracking(true);
+    setErrorMsg("");
+    setBackendResponse("");
+    setActiveAlert(null);
+    hasTriggeredBackend.current = false; // Reset for a fresh SOS
+
+    startGpsTracking(); // Start tracking and trigger backend
+  };
+
+  const stopEmergency = async () => {
+    // Optional: You might want to hit your ResolveSosAPIView here to mark it inactive in the DB
+    if (activeAlert?.id) {
+       try {
+         await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/resolve/`, { // Adjust to your resolve URL
+           method: "PATCH",
+           headers: { 'Authorization': `Bearer ${token}` }
+         });
+       } catch (err) {
+         console.error("Failed to resolve SOS on backend", err);
+       }
+    }
+
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       setWatchId(null);
     }
+    
     setIsTracking(false);
     hasTriggeredBackend.current = false;
     setBackendResponse("");
     setCurrentLocation(null); 
-    setDetails(""); // ✅ Optionally clear the message when stopping the SOS
+    setDetails(""); 
     setActiveAlert(null);
   };
 
@@ -266,7 +309,7 @@ const SosDashboard = () => {
               onClick={stopEmergency}
               className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
             >
-              I am Safe (Stop SOS)
+              Stop SOS
             </button>
           </div>
         )}

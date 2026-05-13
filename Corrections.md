@@ -30,10 +30,10 @@
 
 9th may 2026
 1. fix broken registration as lawyer/volunteer
-2. Fix profile section (no phone/email)
+2. Fix profile section (no phone/email) (done)
 3. Anonymous post
 4. Lawyer can change the status of a case. Add dropdown menu and closing message. Also user can send a message with a dropdown menu for resolve case.
 5. In SOS 'I am safe' will be no more. Instead 'Stop Sos'. Use a message and Dropdown menu (resolved/not resolved). Persist Sos
 6. Is SOS details in volunteer, there will be a message and dropdown .
 7. review/closing message in SOS in both user and volunteer end.
-8. Update profile fix.
+8. Update profile fix.(done)

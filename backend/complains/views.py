@@ -29,7 +29,19 @@ class ReceiveSosAPIView(APIView):
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ActiveUserSosAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        # Fetch the most recent active alert for the logged-in user
+        alert = SosAlert.objects.filter(user=request.user, is_active=True).order_by('-timestamp').first()
+        
+        if alert:
+            # We use the Details serializer so responders are included immediately
+            serializer = SosAlertDetailsSerializer(alert)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        return Response({"message": "No active SOS found."}, status=status.HTTP_404_NOT_FOUND)
 
 # View to mark a specific alert as resolved
 class ResolveSosAPIView(APIView):

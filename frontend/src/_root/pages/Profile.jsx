@@ -68,10 +68,11 @@ const Profile = () => {
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
-              {currentUser.bio}
+              {currentUser.role}
             </p>
 
-            <div className="flex flex-col gap-2 mt-5 mb-5 xl:mb-0 text-center xl:text-left w-full">
+            { isOwnProfile && (
+              <div className="flex flex-col gap-2 mt-5 mb-5 xl:mb-0 text-center xl:text-left w-full">
               {currentUser.email && (
                 <p className="small-regular md:body-medium text-light-3">
                   <span className="text-light-1 font-semibold mr-2">Email:</span> 
@@ -91,6 +92,9 @@ const Profile = () => {
                 </p>
               )}
             </div>
+
+            )}
+            
           </div>
 
           <div className="flex justify-center gap-4">
