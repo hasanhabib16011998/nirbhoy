@@ -218,3 +218,4 @@ class LegalAidDetailAPIView(generics.RetrieveAPIView):
         context = super().get_serializer_context()
         context.update({"request": self.request})
         return context
+    

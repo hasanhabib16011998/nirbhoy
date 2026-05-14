@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Loader from '@/components/shared/Loader';
 import { Button } from '@/components/ui/button';
 import { useGetLegalAidById } from '@/lib/react-query/queriesAndMutations';
+import Chat from '@/components/shared/Chat';
 
 const LegalAidDetails = () => {
   const { id } = useParams();
@@ -26,28 +27,30 @@ const LegalAidDetails = () => {
   }
 
   return (
-    <div className="flex flex-1">
-      <div className="common-container">
+    <div className="flex flex-1 w-full flex-col px-5 py-10 lg:px-14 md:py-14">
+      {/* Header & Back Button */}
+      <div className="flex justify-between items-center w-full mb-6">
+        <Button 
+          onClick={() => navigate(-1)} 
+          variant="ghost" 
+          className="shad-button_ghost"
+        >
+          <img src="/assets/icons/back.svg" alt="back" width={24} height={24} />
+          <p className="small-medium lg:base-medium">Back</p>
+        </Button>
         
-        {/* Header & Back Button */}
-        <div className="flex justify-between items-center w-full max-w-5xl mb-6">
-          <Button 
-            onClick={() => navigate(-1)} 
-            variant="ghost" 
-            className="shad-button_ghost"
-          >
-            <img src="/assets/icons/back.svg" alt="back" width={24} height={24} />
-            <p className="small-medium lg:base-medium">Back</p>
-          </Button>
-          
-          <div className="px-4 py-2 bg-dark-4 rounded-full border border-dark-3">
-            <p className="text-primary-500 font-bold text-sm">Status: {application.status.toUpperCase()}</p>
-          </div>
+        <div className="px-4 py-2 bg-dark-4 rounded-full border border-dark-3">
+          <p className="text-primary-500 font-bold text-sm">Status: {application.status.toUpperCase()}</p>
         </div>
+      </div>
 
-        <div className="bg-dark-2 border border-dark-4 w-full max-w-5xl rounded-[30px] p-8 xl:p-10">
+      {/* --- GRID LAYOUT SETUP --- */}
+      <div className="flex flex-col xl:flex-row gap-8 w-full">
+        
+        {/* LEFT SIDE: Case Details (Takes up remaining space) */}
+        <div className="flex-1 bg-dark-2 border border-dark-4 rounded-[30px] p-8 xl:p-10 h-fit">
           
-          {/* Applicant Info (UPDATED WITH CONTACT DETAILS) */}
+          {/* Applicant Info */}
           <div className="flex items-start gap-4 mb-8 border-b border-dark-4 pb-6">
             <img 
               src={application.applicant?.profile_image || "/assets/icons/profile-placeholder.svg"} 
@@ -66,7 +69,6 @@ const LegalAidDetails = () => {
                 </div>
               </div>
               
-              {/* Applicant Contact Info */}
               <div className="flex flex-wrap gap-4 mt-3 bg-dark-3 p-3 rounded-lg w-fit border border-dark-4">
                 {application.applicant?.phone_number && (
                   <p className="small-medium text-light-2 flex items-center gap-2">
@@ -90,7 +92,7 @@ const LegalAidDetails = () => {
             </p>
           </div>
 
-          {/* Evidence / Attachments */}
+          {/* Attachments */}
           {application.attachments && application.attachments.length > 0 && (
             <div className="mb-10">
               <h3 className="h3-bold text-light-1 mb-4 border-t border-dark-4 pt-6">
@@ -99,7 +101,6 @@ const LegalAidDetails = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {application.attachments.map((attachment) => {
                   const isPdf = attachment.file.toLowerCase().endsWith('.pdf');
-                  
                   return isPdf ? (
                     <a 
                       key={attachment.id} 
@@ -109,9 +110,7 @@ const LegalAidDetails = () => {
                       className="flex flex-col items-center justify-center p-4 bg-dark-3 border border-dark-4 rounded-xl hover:bg-dark-4 transition-colors h-32"
                     >
                       <span className="text-4xl mb-2">📄</span>
-                      <p className="text-xs text-light-2 text-center break-all line-clamp-2">
-                        View PDF
-                      </p>
+                      <p className="text-xs text-light-2 text-center break-all line-clamp-2">View PDF</p>
                     </a>
                   ) : (
                     <a key={attachment.id} href={attachment.file} target="_blank" rel="noreferrer">
@@ -127,7 +126,7 @@ const LegalAidDetails = () => {
             </div>
           )}
 
-          {/* ✅ NEW: Responders Info */}
+          {/* Responders Info */}
           {application.responders && application.responders.length > 0 && (
             <div className="border-t border-dark-4 pt-6">
               <h3 className="h3-bold text-light-1 mb-4">Assigned Lawyers / Responders</h3>
@@ -143,17 +142,12 @@ const LegalAidDetails = () => {
                       <p className="body-bold text-light-1 truncate">
                         {responder.first_name} {responder.last_name} <span className="small-regular text-light-3">(@{responder.username})</span>
                       </p>
-                      
                       <div className="flex flex-col gap-1 mt-2">
                         {responder.phone_number && (
-                          <p className="small-medium text-light-2 flex items-center gap-2 truncate">
-                            📞 {responder.phone_number}
-                          </p>
+                          <p className="small-medium text-light-2 flex items-center gap-2 truncate">📞 {responder.phone_number}</p>
                         )}
                         {responder.email && (
-                          <p className="small-medium text-light-2 flex items-center gap-2 truncate">
-                            ✉️ {responder.email}
-                          </p>
+                          <p className="small-medium text-light-2 flex items-center gap-2 truncate">✉️ {responder.email}</p>
                         )}
                       </div>
                     </div>
@@ -162,8 +156,17 @@ const LegalAidDetails = () => {
               </div>
             </div>
           )}
-
         </div>
+
+        {/* RIGHT SIDE: Chat Component (Fixed width on large screens) */}
+        <div className="w-full xl:w-[450px] shrink-0">
+          <Chat 
+            modelName="LegalAidApplication" // Lowercase name of your Django model
+            objectId={id} 
+            title="Case Discussion"
+          />
+        </div>
+
       </div>
     </div>
   );

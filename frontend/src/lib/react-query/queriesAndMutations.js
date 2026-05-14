@@ -23,7 +23,9 @@ import {
   updateUser,
   getSosData,
   fetchLegalAidDashboard,
-  fetchLegalAidById
+  fetchLegalAidById,
+  fetchComments,
+  addComment
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -198,5 +200,25 @@ export const useGetLegalAidById = (id) => {
     queryKey: ['legalAidDetails', id],
     queryFn: () => fetchLegalAidById(id),
     enabled: !!id, // Only run the query if an ID actually exists
+  });
+};
+
+export const useGetComments = (modelName, objectId) => {
+  return useQuery({
+    queryKey: ['comments', modelName, objectId],
+    queryFn: () => fetchComments(modelName, objectId),
+    enabled: !!modelName && !!objectId,
+    refetchInterval: 5000, // Optional: Poll every 5 seconds for new messages
+  });
+};
+
+export const useAddComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addComment,
+    onSuccess: (data, variables) => {
+      // Instantly refresh the chat when a message is sent
+      queryClient.invalidateQueries(['comments', variables.modelName, variables.objectId]);
+    },
   });
 };

@@ -485,3 +485,20 @@ export const fetchLegalAidById = async (id) => {
     throw error;
   }
 };
+
+export const fetchComments = async (modelName, objectId) => {
+  const token = localStorage.getItem("accessToken");
+  const response = await axios.get(`${API_BASE_URL}/complains/comments/${modelName}/${objectId}/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const addComment = async ({ modelName, objectId, text }) => {
+  const token = localStorage.getItem("accessToken");
+  const response = await axios.post(`${API_BASE_URL}/complains/comments/${modelName}/${objectId}/`, 
+    { text },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};

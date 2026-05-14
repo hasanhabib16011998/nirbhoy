@@ -1,12 +1,14 @@
-// src/pages/SosDetails.jsx (adjust path as needed)
+// src/pages/SosDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Loader from '@/components/shared/Loader';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 
+// Import your reusable Chat component
+import Chat from '@/components/shared/Chat'; 
 
-// Optional: Bring in Leaflet to show the location visually!
+// Bring in Leaflet to show the location visually!
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -23,7 +25,6 @@ L.Icon.Default.mergeOptions({
 const SosDetails = () => {
   const { id } = useParams();
   const { user } = useUserContext();
-  console.log("user",user);
   const navigate = useNavigate();
   const [alert, setAlert] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,7 +34,6 @@ const SosDetails = () => {
       const token = localStorage.getItem('accessToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
       
-      // Assumes you have a detail endpoint like /complains/{id}/
       const response = await fetch(`${API_BASE_URL}/complains/${id}/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -44,7 +44,6 @@ const SosDetails = () => {
       
       const data = await response.json();
       setAlert(data);
-      console.log("response",data)
     } catch (err) {
       toast.error("Error", { description: err.message });
     } finally {
@@ -93,7 +92,7 @@ const SosDetails = () => {
       if (!response.ok) throw new Error('Failed to resolve the alert');
 
       toast.success("Emergency Resolved", { description: "The alert has been successfully closed." });
-      navigate('/dashboard'); // Send them back to the dashboard
+      navigate('/dashboard'); 
 
     } catch (err) {
       toast.error("Failed to resolve", { description: err.message });
@@ -108,11 +107,12 @@ const SosDetails = () => {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto flex flex-col gap-6">
+    // Increased max-width to 7xl to allow side-by-side layout on large screens
+    <div className="p-6 max-w-7xl mx-auto flex flex-col gap-6 w-full">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
-          className="shad-button_ghost">
+          className="shad-button_ghost w-fit">
           <img
             src={"/assets/icons/back.svg"}
             alt="back"
@@ -122,127 +122,142 @@ const SosDetails = () => {
           <p className="small-medium lg:base-medium">Back</p>
         </Button>
 
-      <div className="bg-dark-2 border border-primary-500 rounded-xl p-6">
-        <h2 className="h2-bold text-red-500 mb-4">SOS Details</h2>
+      {/* --- GRID LAYOUT SETUP --- */}
+      <div className="flex flex-col xl:flex-row gap-8 w-full">
         
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* INFO SECTION */}
-          <div className="flex-1 flex flex-col gap-5">
-            
-            {/* Victim Profile Card */}
-            <div className="flex items-center gap-4 bg-dark-3 p-4 rounded-lg border border-dark-4">
-              <img
-                src={alert.user?.profile_image || "/assets/icons/profile-placeholder.svg"}
-                alt="victim profile"
-                className="w-16 h-16 rounded-full object-cover border border-primary-500"
-              />
-              <div className="flex flex-col">
-                <p className="body-bold text-light-1">
-                  {alert.user?.first_name} {alert.user?.last_name} 
-                  <span className="small-regular text-light-3 ml-2">(@{alert.user?.username})</span>
-                </p>
-                
-                {/* Clickable Phone Number */}
-                {alert.user?.phone_number && (
-                  <a href={`tel:${alert.user.phone_number}`} className="small-medium text-primary-500 hover:underline mt-1">
-                    📞 {alert.user.phone_number}
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Additional Contact Info */}
-            <div className="flex flex-col gap-2">
-              {alert.user?.email && (
-                <div>
-                  <p className="text-light-3 small-medium">Email</p>
-                  <p className="text-light-1 body-medium">{alert.user.email}</p>
-                </div>
-              )}
+        {/* LEFT SIDE: SOS Details & Map */}
+        <div className="flex-1 bg-dark-2 border border-primary-500 rounded-xl p-6 h-fit">
+          <h2 className="h2-bold text-red-500 mb-4">SOS Details</h2>
+          
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* INFO SECTION */}
+            <div className="flex-1 flex flex-col gap-5">
               
-              {alert.user?.address && (
-                <div>
-                  <p className="text-light-3 small-medium">Registered Address</p>
-                  <p className="text-light-1 body-medium">{alert.user.address}</p>
+              {/* Victim Profile Card */}
+              <div className="flex items-center gap-4 bg-dark-3 p-4 rounded-lg border border-dark-4">
+                <img
+                  src={alert.user?.profile_image || "/assets/icons/profile-placeholder.svg"}
+                  alt="victim profile"
+                  className="w-16 h-16 rounded-full object-cover border border-primary-500 shrink-0"
+                />
+                <div className="flex flex-col overflow-hidden">
+                  <p className="body-bold text-light-1 truncate">
+                    {alert.user?.first_name} {alert.user?.last_name} 
+                    <span className="small-regular text-light-3 ml-2">(@{alert.user?.username})</span>
+                  </p>
+                  
+                  {/* Clickable Phone Number */}
+                  {alert.user?.phone_number && (
+                    <a href={`tel:${alert.user.phone_number}`} className="small-medium text-primary-500 hover:underline mt-1 truncate">
+                      📞 {alert.user.phone_number}
+                    </a>
+                  )}
                 </div>
-              )}
-
-              <div>
-                <p className="text-light-3 small-medium">Alert Timestamp</p>
-                <p className="text-light-1 body-medium">{new Date(alert.timestamp).toLocaleString()}</p>
               </div>
-            </div>
 
-            {/* Victim's Typed Message */}
-            {alert.message && (
-              <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/50 mt-2">
-                <p className="text-red-500 small-medium mb-1">Message from Victim:</p>
-                <p className="text-light-1 body-medium">{alert.message}</p>
-              </div>
-            )}
-
-            {/* Action Buttons & Resolved Info */}
-            {alert.is_active ? (
-              <div className="mt-2 flex flex-col gap-3">
-                {!hasResponded ? (
-                  <button
-                    onClick={handleRespondAlert}
-                    className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full"
-                  >
-                    I Can Respond
-                  </button>
-                ) : (
-                  <div className="p-3 bg-orange-900/40 border border-orange-500 text-orange-500 rounded-lg text-center base-medium">
-                    🏃 You are marked as responding
+              {/* Additional Contact Info */}
+              <div className="flex flex-col gap-2">
+                {alert.user?.email && (
+                  <div>
+                    <p className="text-light-3 small-medium">Email</p>
+                    <p className="text-light-1 body-medium truncate">{alert.user.email}</p>
                   </div>
                 )}
                 
-                <button
-                  onClick={handleResolveAlert}
-                  className="px-6 py-3 bg-dark-4 border border-red-500 hover:bg-red-600 text-white base-medium rounded-lg transition-colors w-full"
-                >
-                  Mark as Resolved
-                </button>
-              </div>
-            ) : (
-              <div className="mt-2 p-4 bg-green-900/20 border border-green-500 rounded-lg text-center">
-                <p className="text-green-500 h3-bold flex items-center justify-center gap-2">
-                  ✅ RESOLVED
-                </p>
-                <p className="text-light-2 body-medium mt-1">
-                  This emergency situation has been safely resolved.
-                </p>
-              </div>
-            )}
-          </div>
+                {alert.user?.address && (
+                  <div>
+                    <p className="text-light-3 small-medium">Registered Address</p>
+                    <p className="text-light-1 body-medium">{alert.user.address}</p>
+                  </div>
+                )}
 
-          {/* MAP SECTION */}
-          <div className="flex-1 flex flex-col gap-3">
-            <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-dark-4">
-              <MapContainer 
-                center={[alert.latitude, alert.longitude]} 
-                zoom={16} 
-                scrollWheelZoom={false} 
-                style={{ height: "100%", width: "100%" }}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[alert.latitude, alert.longitude]}>
-                  <Popup>Victim Location</Popup>
-                </Marker>
-              </MapContainer>
+                <div>
+                  <p className="text-light-3 small-medium">Alert Timestamp</p>
+                  <p className="text-light-1 body-medium">{new Date(alert.timestamp).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Victim's Typed Message */}
+              {alert.message && (
+                <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/50 mt-2">
+                  <p className="text-red-500 small-medium mb-1">Message from Victim:</p>
+                  <p className="text-light-1 body-medium">{alert.message}</p>
+                </div>
+              )}
+
+              {/* Action Buttons & Resolved Info */}
+              {alert.is_active ? (
+                <div className="mt-2 flex flex-col gap-3">
+                  {!hasResponded ? (
+                    <button
+                      onClick={handleRespondAlert}
+                      className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full"
+                    >
+                      I Can Respond
+                    </button>
+                  ) : (
+                    <div className="p-3 bg-orange-900/40 border border-orange-500 text-orange-500 rounded-lg text-center base-medium">
+                      🏃 You are marked as responding
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={handleResolveAlert}
+                    className="px-6 py-3 bg-dark-4 border border-red-500 hover:bg-red-600 text-white base-medium rounded-lg transition-colors w-full"
+                  >
+                    Mark as Resolved
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-2 p-4 bg-green-900/20 border border-green-500 rounded-lg text-center">
+                  <p className="text-green-500 h3-bold flex items-center justify-center gap-2">
+                    ✅ RESOLVED
+                  </p>
+                  <p className="text-light-2 body-medium mt-1">
+                    This emergency situation has been safely resolved.
+                  </p>
+                </div>
+              )}
             </div>
-            
-            {/* Fixed Google Maps URL */}
-            <a 
-              href={`https://maps.google.com/?q=${alert.latitude},${alert.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-center p-3 bg-dark-3 hover:bg-dark-4 text-primary-500 rounded-lg base-medium transition-colors border border-dark-4"
-            >
-              Open External Navigation (Google Maps)
-            </a>
+
+            {/* MAP SECTION */}
+            <div className="flex-1 flex flex-col gap-3">
+              <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-dark-4">
+                <MapContainer 
+                  center={[alert.latitude, alert.longitude]} 
+                  zoom={16} 
+                  scrollWheelZoom={false} 
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[alert.latitude, alert.longitude]}>
+                    <Popup>Victim Location</Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+              
+              {/* Fixed Google Maps URL */}
+              <a 
+                href={`https://maps.google.com/?q=${alert.latitude},${alert.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-center p-3 bg-dark-3 hover:bg-dark-4 text-primary-500 rounded-lg base-medium transition-colors border border-dark-4"
+              >
+                Open External Navigation (Google Maps)
+              </a>
+            </div>
           </div>
         </div>
+
+        {/* RIGHT SIDE: Chat Component */}
+        <div className="w-full xl:w-[400px] shrink-0">
+          <Chat 
+            modelName="sosalert" // Ensure this matches the lowercase name of your Django SOS model
+            objectId={id} 
+            title="Live Coordination"
+          />
+        </div>
+
       </div>
     </div>
   );

@@ -155,3 +155,44 @@ class PostCommentView(APIView):
         # 4. Return the newly created comment
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+class GenericCommentAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, model_name, object_id):
+        try:
+            # Resolves the generic model (e.g., 'legalaidapplication')
+            content_type = ContentType.objects.get(model=model_name.lower())
+        except ContentType.DoesNotExist:
+            return Response({"error": "Invalid model name."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch comments in chronological order
+        comments = Comment.objects.filter(
+            content_type=content_type, 
+            object_id=object_id
+        ).order_by('created_at')
+        
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, model_name, object_id):
+        try:
+            content_type = ContentType.objects.get(model=model_name.lower())
+        except ContentType.DoesNotExist:
+            return Response({"error": "Invalid model name."}, status=status.HTTP_400_BAD_REQUEST)
+
+        text = request.data.get("text")
+        if not text:
+            return Response({"error": "Text is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the new comment
+        comment = Comment.objects.create(
+            user=request.user,
+            text=text,
+            content_type=content_type,
+            object_id=object_id
+        )
+        
+        serializer = CommentSerializer(comment, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

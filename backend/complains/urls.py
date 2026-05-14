@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from posts.views import GenericCommentAPIView
 
 urlpatterns = [
     path('trigger/', ReceiveSosAPIView.as_view(), name='trigger-sos'),
@@ -11,4 +12,5 @@ urlpatterns = [
     path('legal-aid/apply/', ApplyForLegalAidView.as_view(), name='legal-aid'),
     path('legal-aid/dashboard/', LegalAidDashboardAPIView.as_view(), name='legal-aid-dashboard'),
     path('legal-aid/<int:pk>/', LegalAidDetailAPIView.as_view(), name='legal-aid-detail'),
+    path('comments/<str:model_name>/<int:object_id>/', GenericCommentAPIView.as_view(), name='generic-comments'),
 ]

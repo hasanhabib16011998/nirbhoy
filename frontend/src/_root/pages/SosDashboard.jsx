@@ -3,6 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 
+// --- IMPORT CHAT COMPONENT ---
+import Chat from '@/components/shared/Chat';
+
 // --- NEW LEAFLET IMPORTS ---
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -26,7 +29,6 @@ const SosDashboard = () => {
   const [backendResponse, setBackendResponse] = useState("");
   
   const [currentLocation, setCurrentLocation] = useState(null);
-  // ✅ Add state for the SOS message details
   const [details, setDetails] = useState(""); 
 
   const hasTriggeredBackend = useRef(false);
@@ -60,12 +62,10 @@ const SosDashboard = () => {
     };
 
     fetchActiveSos();
-  }, []); // Run once on mount
+  }, []); 
 
-  // ✅ Accept 'message' as an argument
   const sendInitialSosToBackend = async (latitude, longitude, message) => {
     try {
-
       const response = await fetch(`${API_BASE_URL}/complains/trigger/`, {
         method: "POST",
         headers: {
@@ -75,7 +75,7 @@ const SosDashboard = () => {
         body: JSON.stringify({
           latitude: latitude,
           longitude: longitude,
-          message: message, // ✅ Include the message in the payload
+          message: message, 
         }),
       });
 
@@ -130,16 +130,15 @@ const SosDashboard = () => {
     setErrorMsg("");
     setBackendResponse("");
     setActiveAlert(null);
-    hasTriggeredBackend.current = false; // Reset for a fresh SOS
+    hasTriggeredBackend.current = false; 
 
-    startGpsTracking(); // Start tracking and trigger backend
+    startGpsTracking(); 
   };
 
   const stopEmergency = async () => {
-    // Optional: You might want to hit your ResolveSosAPIView here to mark it inactive in the DB
     if (activeAlert?.id) {
        try {
-         await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/resolve/`, { // Adjust to your resolve URL
+         await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/resolve/`, { 
            method: "PATCH",
            headers: { 'Authorization': `Bearer ${token}` }
          });
@@ -161,8 +160,6 @@ const SosDashboard = () => {
     setActiveAlert(null);
   };
 
-
-  //polling the backend for responders
   useEffect(() => {
     let intervalId;
 
@@ -177,14 +174,13 @@ const SosDashboard = () => {
         
         if (response.ok) {
           const data = await response.json();
-          setActiveAlert(data); // Update state with the fresh data (including responders)
+          setActiveAlert(data); 
         }
       } catch (error) {
         console.error("Error polling SOS updates:", error);
       }
     };
 
-    // If we are tracking and have an ID, check for responders every 5 seconds
     if (isTracking && activeAlert?.id) {
       intervalId = setInterval(fetchAlertUpdates, 5000);
     }
@@ -201,125 +197,142 @@ const SosDashboard = () => {
   }, [watchId]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-screen bg-dark-1 p-6">
-      <div className="max-w-md w-full flex flex-col items-center text-center gap-8">
+    <div className="flex flex-col items-center w-full min-h-screen bg-dark-1 p-6 md:p-10">
+      
+      {/* Container - Expanded width for 2-column layout when tracking */}
+      <div className={`w-full flex flex-col xl:flex-row gap-8 items-start justify-center transition-all duration-300 ${isTracking ? 'max-w-6xl' : 'max-w-md'}`}>
         
-        <div>
-          <h1 className="h2-bold text-red-500 mb-2">Emergency Dashboard</h1>
-          <p className="body-medium text-light-2">
-            Activating this will immediately share your live location with vetted volunteers nearby.
-          </p>
+        {/* LEFT COLUMN: SOS Dashboard Controls */}
+        <div className="flex-1 flex flex-col items-center text-center gap-8 w-full bg-dark-2 p-8 rounded-3xl border border-dark-4 shadow-xl">
+          
+          <div>
+            <h1 className="h2-bold text-red-500 mb-2">Emergency Dashboard</h1>
+            <p className="body-medium text-light-2">
+              Activating this will immediately share your live location with vetted volunteers nearby.
+            </p>
+          </div>
+
+          {errorMsg && <p className="text-red-500 body-bold">{errorMsg}</p>}
+          
+          {/* Show Responders if they exist */}
+          {activeAlert?.responders?.length > 0 ? (
+            <div className="bg-orange-900/20 border-2 border-orange-500 p-5 rounded-xl w-full shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-pulse">
+              <h2 className="text-orange-500 h2-bold mb-3 flex items-center justify-center gap-2">
+                🏃 Help is on the way!
+              </h2>
+              <p className="text-light-2 small-medium mb-4">The following volunteer(s) are responding to your location:</p>
+              
+              <div className="flex flex-col gap-3">
+                {activeAlert.responders.map((responder) => (
+                  <div key={responder.id} className="bg-dark-3 p-3 rounded-lg border border-dark-4 flex items-center gap-3 text-left">
+                    <img 
+                      src={responder.profile_image || "/assets/icons/profile-placeholder.svg"} 
+                      alt="volunteer" 
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-light-1 body-bold">{responder.first_name} {responder.last_name}</p>
+                      {responder.phone_number && (
+                        <a href={`tel:${responder.phone_number}`} className="text-primary-500 small-medium hover:underline">
+                          📞 {responder.phone_number}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Show standard success message if no one has responded yet */
+            backendResponse && (
+              <div className="bg-green-500/10 border border-green-500 p-4 rounded-lg w-full">
+                <p className="text-green-500 body-bold">{backendResponse}</p>
+                <p className="text-light-3 small-regular mt-1">Waiting for volunteers to respond...</p>
+              </div>
+            )
+          )}
+
+          {/* MAP COMPONENT */}
+          {currentLocation && isTracking && (
+            <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)] z-0">
+              <MapContainer 
+                center={[currentLocation.lat, currentLocation.lng]} 
+                zoom={16} 
+                scrollWheelZoom={false} 
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={[currentLocation.lat, currentLocation.lng]}>
+                  <Popup>
+                    You are broadcasting from here.
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          )}
+
+          {!isTracking && (
+            <div className="w-full flex flex-col items-start gap-2">
+              <label htmlFor="sos-details" className="text-light-2 small-medium ml-1">
+                Optional Details (Nature of emergency, medical needs, etc.)
+              </label>
+              <textarea
+                id="sos-details"
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                placeholder="E.g., Car accident, need medical help..."
+                className="w-full h-24 p-3 rounded-lg bg-dark-3 text-light-1 border border-dark-4 placeholder:text-light-4 focus:ring-2 focus:ring-red-500 resize-none outline-none"
+              />
+            </div>
+          )}
+
+          {!isTracking ? (
+            <button
+              onClick={startEmergency}
+              className="w-64 h-64 rounded-full bg-red-600 border-8 border-red-900 shadow-[0_0_40px_rgba(220,38,38,0.5)] flex items-center justify-center transition-transform active:scale-95 z-10"
+            >
+              <span className="h1-bold text-white">TAP TO<br/>BROADCAST</span>
+            </button>
+          ) : (
+            <div className="flex flex-col items-center gap-6 w-full z-10 mt-4">
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
+                </span>
+                <span className="body-bold text-red-500">LIVE BROADCASTING...</span>
+              </div>
+              
+              <button
+                onClick={stopEmergency}
+                className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
+              >
+                Stop SOS
+              </button>
+            </div>
+          )}
+
+          <button 
+            onClick={() => navigate(-1)}
+            className="mt-2 text-light-3 hover:text-light-1 underline"
+          >
+            Return to App
+          </button>
         </div>
 
-        {errorMsg && <p className="text-red-500 body-bold">{errorMsg}</p>}
-        
-        {/* ✅ NEW UI: Show Responders if they exist */}
-        {activeAlert?.responders?.length > 0 ? (
-          <div className="bg-orange-900/20 border-2 border-orange-500 p-5 rounded-xl w-full shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-pulse">
-            <h2 className="text-orange-500 h2-bold mb-3 flex items-center justify-center gap-2">
-              🏃 Help is on the way!
-            </h2>
-            <p className="text-light-2 small-medium mb-4">The following volunteer(s) are responding to your location:</p>
-            
-            <div className="flex flex-col gap-3">
-              {activeAlert.responders.map((responder) => (
-                <div key={responder.id} className="bg-dark-3 p-3 rounded-lg border border-dark-4 flex items-center gap-3 text-left">
-                  <img 
-                    src={responder.profile_image || "/assets/icons/profile-placeholder.svg"} 
-                    alt="volunteer" 
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-light-1 body-bold">{responder.first_name} {responder.last_name}</p>
-                    {responder.phone_number && (
-                      <a href={`tel:${responder.phone_number}`} className="text-primary-500 small-medium hover:underline">
-                        📞 {responder.phone_number}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          /* Show standard success message if no one has responded yet */
-          backendResponse && (
-            <div className="bg-green-500/10 border border-green-500 p-4 rounded-lg w-full">
-              <p className="text-green-500 body-bold">{backendResponse}</p>
-              <p className="text-light-3 small-regular mt-1">Waiting for volunteers to respond...</p>
-            </div>
-          )
-        )}
-
-        {/* MAP COMPONENT */}
-        {currentLocation && isTracking && (
-          <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)] z-0">
-            <MapContainer 
-              center={[currentLocation.lat, currentLocation.lng]} 
-              zoom={16} 
-              scrollWheelZoom={false} 
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[currentLocation.lat, currentLocation.lng]}>
-                <Popup>
-                  You are broadcasting from here.
-                </Popup>
-              </Marker>
-            </MapContainer>
-          </div>
-        )}
-
-        {!isTracking && (
-          <div className="w-full flex flex-col items-start gap-2">
-            <label htmlFor="sos-details" className="text-light-2 small-medium ml-1">
-              Optional Details (Nature of emergency, medical needs, etc.)
-            </label>
-            <textarea
-              id="sos-details"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="E.g., Car accident, need medical help..."
-              className="w-full h-24 p-3 rounded-lg bg-dark-2 text-light-1 border-none placeholder:text-light-4 focus:ring-2 focus:ring-red-500 resize-none"
+        {/* RIGHT COLUMN: Chat (Only visible when SOS is active) */}
+        {isTracking && activeAlert?.id && (
+          <div className="w-full xl:w-[450px] shrink-0 transition-all duration-300">
+            <Chat 
+              modelName="sosalert" // Make sure this matches your SOS Django model name in lowercase
+              objectId={activeAlert.id} 
+              title="Live Coordination"
             />
           </div>
         )}
-
-        {!isTracking ? (
-          <button
-            onClick={startEmergency}
-            className="w-64 h-64 rounded-full bg-red-600 border-8 border-red-900 shadow-[0_0_40px_rgba(220,38,38,0.5)] flex items-center justify-center transition-transform active:scale-95 z-10"
-          >
-            <span className="h1-bold text-white">TAP TO<br/>BROADCAST</span>
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-6 w-full z-10 mt-4">
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
-              </span>
-              <span className="body-bold text-red-500">LIVE BROADCASTING...</span>
-            </div>
-            
-            <button
-              onClick={stopEmergency}
-              className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
-            >
-              Stop SOS
-            </button>
-          </div>
-        )}
-
-        <button 
-          onClick={() => navigate(-1)}
-          className="mt-4 text-light-3 hover:text-light-1 underline"
-        >
-          Return to App
-        </button>
 
       </div>
     </div>
