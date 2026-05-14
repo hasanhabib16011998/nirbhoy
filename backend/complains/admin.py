@@ -1,8 +1,15 @@
 # emergencies/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import SosAlert, LegalAidApplication
+from .models import *
+from django.contrib.contenttypes.admin import GenericStackedInline
 from posts.admin import AttachmentInline
+
+class ResolveStatusInline(GenericStackedInline):
+    model = ResolveStatus
+    extra = 0 # Doesn't show empty redundant forms
+    max_num = 1 # Restricts admins to only 1 resolution status per case
+    can_delete = False
 
 @admin.register(SosAlert)
 class SosAlertAdmin(admin.ModelAdmin):
@@ -30,6 +37,7 @@ class SosAlertAdmin(admin.ModelAdmin):
             'fields': ('responders',)
         }),
     )
+    inlines = [ResolveStatusInline]
 
     def map_view(self, obj):
         """
@@ -70,5 +78,5 @@ class LegalAidApplicationAdmin(admin.ModelAdmin):
     # Dates should usually be read-only in the admin
     readonly_fields = ('created_at',)
     
-    inlines = [AttachmentInline]
+    inlines = [AttachmentInline, ResolveStatusInline]
     
