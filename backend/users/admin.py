@@ -72,7 +72,7 @@ class VolunteerProfileAdmin(admin.ModelAdmin):
             'fields': ('user',)
         }),
         ('Verification Documents', {
-            'fields': ('nid_image', 'nid_image_preview')
+            'fields': ('nid_file', 'nid_image_preview')
         }),
     )
 
@@ -94,12 +94,12 @@ class VolunteerProfileAdmin(admin.ModelAdmin):
     # --- Custom Method to show the NID image inline ---
 
     def nid_image_preview(self, obj):
-        if obj.nid_image:
+        if obj.nid_file:
             return format_html(
                 '<a href="{0}" target="_blank">'
                 '<img src="{0}" style="max-height: 200px; max-width: 300px; border-radius: 5px; border: 1px solid #ccc;" />'
                 '</a>', 
-                obj.nid_image.url
+                obj.nid_file.url
             )
         return "No NID uploaded yet."
     nid_image_preview.short_description = "NID Image Preview"

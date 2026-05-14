@@ -29,7 +29,7 @@
 3. People section will include only lawyers (Done)
 
 9th may 2026
-1. fix broken registration as lawyer/volunteer
+1. fix broken registration as lawyer/volunteer (done)
 2. Fix profile section (no phone/email) (done)
 3. Anonymous post
 4. Lawyer can change the status of a case. Add dropdown menu and closing message. Also user can send a message with a dropdown menu for resolve case.
