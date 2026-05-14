@@ -1,6 +1,6 @@
 # emergencies/serializers.py
 from rest_framework import serializers
-from .models import SosAlert, LegalAidApplication
+from .models import *
 from users.models import User
 from posts.serializers import AttachmentSerializer
 from posts.serializers import UserTinySerializer
@@ -77,3 +77,14 @@ class LegalAidDetailsSerializer(serializers.ModelSerializer):
             'attachments', 
             'created_at'
         ]
+
+class ResolveStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResolveStatus
+        fields = [
+            'id', 
+            'is_resolved_user', 'user_review', 
+            'is_resolved_responder', 'responder_review', 
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']

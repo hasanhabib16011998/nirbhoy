@@ -5,10 +5,11 @@ import Loader from '@/components/shared/Loader';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 
-// Import your reusable Chat component
+// Components
 import Chat from '@/components/shared/Chat'; 
+import ResolutionPanel from '@/components/shared/ResolutionPanel'; // ✅ Imported Panel
 
-// Bring in Leaflet to show the location visually!
+// Leaflet
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -78,8 +79,7 @@ const SosDetails = () => {
   };
 
   const handleResolveAlert = async () => {
-    if (!window.confirm("Are you sure this situation is resolved and the user is safe?")) return;
-
+    // Note: window.confirm removed because the text input serves as intent confirmation
     try {
       const token = localStorage.getItem('accessToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -107,7 +107,6 @@ const SosDetails = () => {
   );
 
   return (
-    // Increased max-width to 7xl to allow side-by-side layout on large screens
     <div className="p-6 max-w-7xl mx-auto flex flex-col gap-6 w-full">
         <Button
           onClick={() => navigate(-1)}
@@ -122,7 +121,6 @@ const SosDetails = () => {
           <p className="small-medium lg:base-medium">Back</p>
         </Button>
 
-      {/* --- GRID LAYOUT SETUP --- */}
       <div className="flex flex-col xl:flex-row gap-8 w-full">
         
         {/* LEFT SIDE: SOS Details & Map */}
@@ -130,10 +128,8 @@ const SosDetails = () => {
           <h2 className="h2-bold text-red-500 mb-4">SOS Details</h2>
           
           <div className="flex flex-col md:flex-row gap-8">
-            {/* INFO SECTION */}
             <div className="flex-1 flex flex-col gap-5">
               
-              {/* Victim Profile Card */}
               <div className="flex items-center gap-4 bg-dark-3 p-4 rounded-lg border border-dark-4">
                 <img
                   src={alert.user?.profile_image || "/assets/icons/profile-placeholder.svg"}
@@ -146,7 +142,6 @@ const SosDetails = () => {
                     <span className="small-regular text-light-3 ml-2">(@{alert.user?.username})</span>
                   </p>
                   
-                  {/* Clickable Phone Number */}
                   {alert.user?.phone_number && (
                     <a href={`tel:${alert.user.phone_number}`} className="small-medium text-primary-500 hover:underline mt-1 truncate">
                       📞 {alert.user.phone_number}
@@ -155,7 +150,6 @@ const SosDetails = () => {
                 </div>
               </div>
 
-              {/* Additional Contact Info */}
               <div className="flex flex-col gap-2">
                 {alert.user?.email && (
                   <div>
@@ -177,7 +171,6 @@ const SosDetails = () => {
                 </div>
               </div>
 
-              {/* Victim's Typed Message */}
               {alert.message && (
                 <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/50 mt-2">
                   <p className="text-red-500 small-medium mb-1">Message from Victim:</p>
@@ -185,37 +178,52 @@ const SosDetails = () => {
                 </div>
               )}
 
-              {/* Action Buttons & Resolved Info */}
+              {/* ✅ ACTION BUTTONS & RESOLUTION PANEL */}
               {alert.is_active ? (
                 <div className="mt-2 flex flex-col gap-3">
-                  {!hasResponded ? (
-                    <button
-                      onClick={handleRespondAlert}
-                      className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full"
-                    >
-                      I Can Respond
-                    </button>
-                  ) : (
-                    <div className="p-3 bg-orange-900/40 border border-orange-500 text-orange-500 rounded-lg text-center base-medium">
-                      🏃 You are marked as responding
-                    </div>
+                  
+                  {/* Show "I can respond" ONLY to Volunteers/Lawyers */}
+                  {(user?.role === 'Volunteer' || user?.role === 'Lawyer') && (
+                    !hasResponded ? (
+                      <button
+                        onClick={handleRespondAlert}
+                        className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full"
+                      >
+                        I Can Respond
+                      </button>
+                    ) : (
+                      <div className="p-3 bg-orange-900/40 border border-orange-500 text-orange-500 rounded-lg text-center base-medium">
+                        🏃 You are marked as responding
+                      </div>
+                    )
                   )}
                   
-                  <button
-                    onClick={handleResolveAlert}
-                    className="px-6 py-3 bg-dark-4 border border-red-500 hover:bg-red-600 text-white base-medium rounded-lg transition-colors w-full"
-                  >
-                    Mark as Resolved
-                  </button>
+                  {/* Reusable Resolution Panel */}
+                  <ResolutionPanel 
+                    modelName="sosalert"
+                    objectId={id}
+                    onResolveParent={handleResolveAlert}
+                    isMainActive={alert.is_active}
+                  />
+
                 </div>
               ) : (
-                <div className="mt-2 p-4 bg-green-900/20 border border-green-500 rounded-lg text-center">
-                  <p className="text-green-500 h3-bold flex items-center justify-center gap-2">
-                    ✅ RESOLVED
-                  </p>
-                  <p className="text-light-2 body-medium mt-1">
-                    This emergency situation has been safely resolved.
-                  </p>
+                <div className="mt-2 flex flex-col gap-4">
+                  <div className="p-4 bg-green-900/20 border border-green-500 rounded-lg text-center">
+                    <p className="text-green-500 h3-bold flex items-center justify-center gap-2">
+                      ✅ RESOLVED
+                    </p>
+                    <p className="text-light-2 body-medium mt-1">
+                      This emergency situation has been safely resolved.
+                    </p>
+                  </div>
+                  
+                  {/* Shows the read-only reviews since isMainActive is false */}
+                  <ResolutionPanel 
+                    modelName="sosalert"
+                    objectId={id}
+                    isMainActive={alert.is_active}
+                  />
                 </div>
               )}
             </div>
@@ -236,7 +244,6 @@ const SosDetails = () => {
                 </MapContainer>
               </div>
               
-              {/* Fixed Google Maps URL */}
               <a 
                 href={`https://maps.google.com/?q=${alert.latitude},${alert.longitude}`}
                 target="_blank"
@@ -252,7 +259,7 @@ const SosDetails = () => {
         {/* RIGHT SIDE: Chat Component */}
         <div className="w-full xl:w-[400px] shrink-0">
           <Chat 
-            modelName="sosalert" // Ensure this matches the lowercase name of your Django SOS model
+            modelName="sosalert" 
             objectId={id} 
             title="Live Coordination"
           />

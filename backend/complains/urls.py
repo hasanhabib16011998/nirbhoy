@@ -13,4 +13,5 @@ urlpatterns = [
     path('legal-aid/dashboard/', LegalAidDashboardAPIView.as_view(), name='legal-aid-dashboard'),
     path('legal-aid/<int:pk>/', LegalAidDetailAPIView.as_view(), name='legal-aid-detail'),
     path('comments/<str:model_name>/<int:object_id>/', GenericCommentAPIView.as_view(), name='generic-comments'),
+    path('resolve-status/<str:model_name>/<int:object_id>/', ResolveStatusAPIView.as_view(), name='resolve-status'),
 ]

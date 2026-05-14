@@ -4,9 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .models import SosAlert, LegalAidApplication
-from .serializers import SosAlertSerializer, SosAlertDetailsSerializer, LegalAidApplicationSerializer, LegalAidDashbordSerializer, LegalAidDetailsSerializer
+from .serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import generics
+from django.contrib.contenttypes.models import ContentType
+
 
 class ReceiveSosAPIView(APIView):
     # This ensures only logged-in users can trigger an SOS
@@ -219,3 +221,45 @@ class LegalAidDetailAPIView(generics.RetrieveAPIView):
         context.update({"request": self.request})
         return context
     
+class ResolveStatusAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_content_type(self, model_name):
+        try:
+            return ContentType.objects.get(model=model_name.lower())
+        except ContentType.DoesNotExist:
+            return None
+
+    def get(self, request, model_name, object_id):
+        content_type = self.get_content_type(model_name)
+        if not content_type:
+            return Response({"error": "Invalid model name."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fetch the status if it exists, otherwise return an empty 200 response
+        resolve_status = ResolveStatus.objects.filter(content_type=content_type, object_id=object_id).first()
+        if not resolve_status:
+            return Response(None, status=status.HTTP_200_OK)
+            
+        serializer = ResolveStatusSerializer(resolve_status)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, model_name, object_id):
+        content_type = self.get_content_type(model_name)
+        if not content_type:
+            return Response({"error": "Invalid model name."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # get_or_create ensures that the first person to resolve creates the record,
+        # and the second person simply updates it.
+        resolve_status, created = ResolveStatus.objects.get_or_create(
+            content_type=content_type,
+            object_id=object_id
+        )
+
+        # partial=True allows sending only specific fields (e.g., just the responder's review)
+        serializer = ResolveStatusSerializer(resolve_status, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

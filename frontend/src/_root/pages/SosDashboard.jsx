@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
+import { useGetResolveStatus, useUpdateResolveStatus } from '@/lib/react-query/queriesAndMutations';
 
 // --- IMPORT CHAT COMPONENT ---
 import Chat from '@/components/shared/Chat';
@@ -30,11 +31,19 @@ const SosDashboard = () => {
   
   const [currentLocation, setCurrentLocation] = useState(null);
   const [details, setDetails] = useState(""); 
+  const [userReview, setUserReview] = useState(""); // ✅ State for resolution message
 
   const hasTriggeredBackend = useRef(false);
   const [activeAlert, setActiveAlert] = useState(null);
   const token = localStorage.getItem("accessToken");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+  // ✅ TanStack Queries for Resolve Status
+  const { data: resolveStatus } = useGetResolveStatus(
+    activeAlert ? "sosalert" : null, 
+    activeAlert?.id
+  );
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } = useUpdateResolveStatus();
 
   useEffect(() => {
     const fetchActiveSos = async () => {
@@ -45,15 +54,10 @@ const SosDashboard = () => {
 
         if (response.ok) {
           const data = await response.json();
-          // Restore the state from the backend data
           setActiveAlert(data);
           setDetails(data.message || "");
           setIsTracking(true);
-          
-          // CRITICAL: Set this to true so we don't accidentally POST a new SOS
           hasTriggeredBackend.current = true; 
-          
-          // Resume local GPS tracking
           startGpsTracking(); 
         }
       } catch (error) {
@@ -72,11 +76,7 @@ const SosDashboard = () => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          latitude: latitude,
-          longitude: longitude,
-          message: message, 
-        }),
+        body: JSON.stringify({ latitude, longitude, message }),
       });
 
       const data = await response.json();
@@ -108,7 +108,6 @@ const SosDashboard = () => {
 
         setCurrentLocation({ lat: formattedLat, lng: formattedLng });
         
-        // Only trigger the POST request if we haven't done it yet
         if (!hasTriggeredBackend.current) {
           hasTriggeredBackend.current = true;
           sendInitialSosToBackend(formattedLat, formattedLng, details);
@@ -130,6 +129,7 @@ const SosDashboard = () => {
     setErrorMsg("");
     setBackendResponse("");
     setActiveAlert(null);
+    setUserReview(""); // Reset review
     hasTriggeredBackend.current = false; 
 
     startGpsTracking(); 
@@ -138,6 +138,17 @@ const SosDashboard = () => {
   const stopEmergency = async () => {
     if (activeAlert?.id) {
        try {
+         // ✅ 1. Update the Generic ResolveStatus table first
+         await updateStatus({
+           modelName: "sosalert",
+           objectId: activeAlert.id,
+           updateData: {
+             is_resolved_user: true,
+             user_review: userReview.trim() || "Emergency ended by user."
+           }
+         });
+
+         // ✅ 2. Resolve the main SOS Alert to deactivate it
          await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/resolve/`, { 
            method: "PATCH",
            headers: { 'Authorization': `Bearer ${token}` }
@@ -147,6 +158,7 @@ const SosDashboard = () => {
        }
     }
 
+    // Cleanup local state
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       setWatchId(null);
@@ -157,21 +169,19 @@ const SosDashboard = () => {
     setBackendResponse("");
     setCurrentLocation(null); 
     setDetails(""); 
+    setUserReview("");
     setActiveAlert(null);
   };
 
+  // Polling for updates
   useEffect(() => {
     let intervalId;
-
     const fetchAlertUpdates = async () => {
       if (!activeAlert?.id) return;
-      
       try {
-        const token = localStorage.getItem("accessToken");
         const response = await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
         if (response.ok) {
           const data = await response.json();
           setActiveAlert(data); 
@@ -199,7 +209,6 @@ const SosDashboard = () => {
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-dark-1 p-6 md:p-10">
       
-      {/* Container - Expanded width for 2-column layout when tracking */}
       <div className={`w-full flex flex-col xl:flex-row gap-8 items-start justify-center transition-all duration-300 ${isTracking ? 'max-w-6xl' : 'max-w-md'}`}>
         
         {/* LEFT COLUMN: SOS Dashboard Controls */}
@@ -243,7 +252,6 @@ const SosDashboard = () => {
               </div>
             </div>
           ) : (
-            /* Show standard success message if no one has responded yet */
             backendResponse && (
               <div className="bg-green-500/10 border border-green-500 p-4 rounded-lg w-full">
                 <p className="text-green-500 body-bold">{backendResponse}</p>
@@ -266,9 +274,7 @@ const SosDashboard = () => {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <Marker position={[currentLocation.lat, currentLocation.lng]}>
-                  <Popup>
-                    You are broadcasting from here.
-                  </Popup>
+                  <Popup>You are broadcasting from here.</Popup>
                 </Marker>
               </MapContainer>
             </div>
@@ -297,7 +303,7 @@ const SosDashboard = () => {
               <span className="h1-bold text-white">TAP TO<br/>BROADCAST</span>
             </button>
           ) : (
-            <div className="flex flex-col items-center gap-6 w-full z-10 mt-4">
+            <div className="flex flex-col items-center gap-6 w-full z-10 mt-4 border-t border-dark-4 pt-6">
               <div className="flex items-center gap-3">
                 <span className="relative flex h-4 w-4">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -305,12 +311,39 @@ const SosDashboard = () => {
                 </span>
                 <span className="body-bold text-red-500">LIVE BROADCASTING...</span>
               </div>
+
+              {/* ✅ NEW: Check if Responder resolved it */}
+              {resolveStatus?.is_resolved_responder && (
+                <div className="w-full p-4 bg-green-900/30 border border-green-500 rounded-lg">
+                  <p className="text-green-500 body-bold flex items-center justify-center gap-2">
+                    ✅ A responder has marked this safe.
+                  </p>
+                  <p className="text-light-2 small-medium mt-1">
+                    Responder Note: "{resolveStatus.responder_review}"
+                  </p>
+                </div>
+              )}
               
+              {/* ✅ NEW: Resolution Review Input */}
+              <div className="w-full flex flex-col items-start gap-2">
+                <label className="text-light-2 small-medium ml-1">
+                  Resolution Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={userReview}
+                  onChange={(e) => setUserReview(e.target.value)}
+                  placeholder="I am safe now, thank you!"
+                  className="w-full p-3 rounded-lg bg-dark-3 text-light-1 border border-dark-4 focus:ring-2 focus:ring-primary-500 outline-none"
+                />
+              </div>
+
               <button
                 onClick={stopEmergency}
-                className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
+                disabled={isUpdatingStatus}
+                className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors disabled:opacity-50"
               >
-                Stop SOS
+                {isUpdatingStatus ? "Resolving..." : "Mark as Resolved & Stop SOS"}
               </button>
             </div>
           )}
@@ -327,7 +360,7 @@ const SosDashboard = () => {
         {isTracking && activeAlert?.id && (
           <div className="w-full xl:w-[450px] shrink-0 transition-all duration-300">
             <Chat 
-              modelName="sosalert" // Make sure this matches your SOS Django model name in lowercase
+              modelName="sosalert" 
               objectId={activeAlert.id} 
               title="Live Coordination"
             />

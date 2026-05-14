@@ -502,3 +502,23 @@ export const addComment = async ({ modelName, objectId, text }) => {
   );
   return response.data;
 };
+
+export const fetchResolveStatus = async (modelName, objectId) => {
+  const token = localStorage.getItem("accessToken");
+  const response = await axios.get(`${API_BASE_URL}/complains/resolve-status/${modelName}/${objectId}/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+// Update the resolution status
+export const updateResolveStatus = async ({ modelName, objectId, updateData }) => {
+  const token = localStorage.getItem("accessToken");
+  // updateData will be an object like: { is_resolved_user: true, user_review: "Great help!" }
+  const response = await axios.patch(
+    `${API_BASE_URL}/complains/resolve-status/${modelName}/${objectId}/`, 
+    updateData,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};

@@ -25,7 +25,9 @@ import {
   fetchLegalAidDashboard,
   fetchLegalAidById,
   fetchComments,
-  addComment
+  addComment,
+  fetchResolveStatus,
+  updateResolveStatus
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -219,6 +221,28 @@ export const useAddComment = () => {
     onSuccess: (data, variables) => {
       // Instantly refresh the chat when a message is sent
       queryClient.invalidateQueries(['comments', variables.modelName, variables.objectId]);
+    },
+  });
+};
+
+export const useGetResolveStatus = (modelName, objectId) => {
+  return useQuery({
+    queryKey: ['resolveStatus', modelName, objectId],
+    queryFn: () => fetchResolveStatus(modelName, objectId),
+    enabled: !!modelName && !!objectId,
+  });
+};
+
+export const useUpdateResolveStatus = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: updateResolveStatus,
+    onSuccess: (data, variables) => {
+      // Invalidate the query so the UI instantly reflects the new status
+      queryClient.invalidateQueries({
+        queryKey: ['resolveStatus', variables.modelName, variables.objectId]
+      });
     },
   });
 };
