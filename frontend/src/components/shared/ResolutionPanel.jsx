@@ -46,13 +46,13 @@ const ResolutionPanel = ({ modelName, objectId, onResolveParent, isMainActive })
       {/* Show the OTHER party's status if they have already resolved it */}
       {isSurvivor && hasResponderResolved && (
         <div className="p-4 bg-green-900/20 border border-green-500 rounded-lg">
-          <p className="text-green-500 body-bold">✅ Responder marked situation as safe.</p>
+        <p className="text-green-500 body-bold">✅ Responder Review</p>
           <p className="text-light-2 small-medium mt-1">Responder Note: {resolveStatus.responder_review}</p>
         </div>
       )}
       {isResponder && hasUserResolved && (
         <div className="p-4 bg-green-900/20 border border-green-500 rounded-lg">
-          <p className="text-green-500 body-bold">✅ User marked situation as safe.</p>
+          <p className="text-green-500 body-bold">✅ User Review</p>
           <p className="text-light-2 small-medium mt-1">User Note: {resolveStatus.user_review}</p>
         </div>
       )}
@@ -69,7 +69,7 @@ const ResolutionPanel = ({ modelName, objectId, onResolveParent, isMainActive })
              <textarea
                value={review}
                onChange={(e) => setReview(e.target.value)}
-               placeholder="I am safe now. The volunteer helped me with..."
+               placeholder="Leave your feedback..."
                className="w-full p-3 rounded-lg bg-dark-3 text-light-1 border border-dark-4 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-24"
              />
              <Button onClick={handleResolve} disabled={isPending} className="shad-button_primary w-full py-6">

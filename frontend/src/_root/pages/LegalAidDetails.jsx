@@ -4,10 +4,13 @@ import Loader from '@/components/shared/Loader';
 import { Button } from '@/components/ui/button';
 import { useGetLegalAidById } from '@/lib/react-query/queriesAndMutations';
 import Chat from '@/components/shared/Chat';
+import ResolutionPanel from '@/components/shared/ResolutionPanel';
 
 const LegalAidDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  // Assuming this hook returns a refetch function so we can refresh the data when resolved
   const { data: application, isLoading, isError } = useGetLegalAidById(id);
 
   if (isLoading) {
@@ -25,6 +28,11 @@ const LegalAidDetails = () => {
       </div>
     );
   }
+
+  // ✅ Determine if the case is still active (adjust string based on your Django choices)
+  const isCaseActive = application.status.toLowerCase() !== 'closed';
+
+
 
   return (
     <div className="flex flex-1 w-full flex-col px-5 py-10 lg:px-14 md:py-14">
@@ -156,12 +164,22 @@ const LegalAidDetails = () => {
               </div>
             </div>
           )}
+
+          {/* ✅ RESOLUTION PANEL */}
+          <div className="mt-8">
+            <ResolutionPanel 
+              modelName="legalaidapplication" // Must be lowercase for Django ContentType
+              objectId={id}
+              isMainActive={isCaseActive}
+            />
+          </div>
+
         </div>
 
         {/* RIGHT SIDE: Chat Component (Fixed width on large screens) */}
         <div className="w-full xl:w-[450px] shrink-0">
           <Chat 
-            modelName="LegalAidApplication" // Lowercase name of your Django model
+            modelName="legalaidapplication"
             objectId={id} 
             title="Case Discussion"
           />
