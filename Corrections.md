@@ -37,3 +37,11 @@
 6. Is SOS details in volunteer, there will be a message and dropdown .(done)
 7. review/closing message in SOS in both user and volunteer end.(done)
 8. Update profile fix.(done)
+
+14may 2026
+1. In resolve status update change text to "give feedback to nirbhoy'
+2. Isolate 'Stop SOS' from resolve
+3. Use checkbox/dropdown for resolve
+4. bring is resolve status (user/volunteer) in admin panel
+5. User cant change their phone number
+6. contact us page instead of saved.
