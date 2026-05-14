@@ -3,9 +3,13 @@ import React from 'react';
 import SosView from './SosView';
 import { useGetSosData, useGetLegalAidData } from '@/lib/react-query/queriesAndMutations';
 import LegalAidView from './LegalAidView';
+import { useUserContext } from '@/context/AuthContext';
 
 const UserDashboard = () => {
   const { data, isLoading, isError, error } = useGetSosData();
+  const { user } = useUserContext()
+  console.log(user);
+  console.log(data);
   const { 
     data: aidData, 
     isLoading: aidIsLoading, 
@@ -29,6 +33,7 @@ const UserDashboard = () => {
         emptyActiveText="You currently have no active SOS alerts."
         emptyHistoryText="You have no past SOS history."
         data={data}
+        user={user}
         isLoading={isLoading}
         isError={isError}
         error={error}

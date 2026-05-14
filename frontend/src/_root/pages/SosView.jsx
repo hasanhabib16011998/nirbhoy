@@ -10,6 +10,7 @@ const SosView = ({
   emptyActiveText, 
   emptyHistoryText,
   data, 
+  user, 
   isLoading, 
   isError, 
   error 
@@ -19,6 +20,7 @@ const SosView = ({
   // Safely extract the arrays
   const alerts = data?.active || [];
   const historyAlerts = data?.history || [];
+  console.log(user);
 
   // Handle errors
   useEffect(() => {
@@ -43,6 +45,8 @@ const SosView = ({
       let statusText = "🚨 SOS ALERT";
       let statusColor = "text-red-500";
       let borderColor = "bg-red-900/20 border-red-500";
+      const alertUserId = alert.user?.id || alert.user;
+      const complainedByOwn = String(alertUserId) === user?.id;
 
       if (isHistoryView) {
         statusText = alert.is_active ? "🏃 IN PROGRESS" : "✅ RESOLVED";
@@ -60,9 +64,18 @@ const SosView = ({
             <h3 className={`h3-bold flex items-center gap-2 ${statusColor}`}>
               {statusText}
             </h3>
-            <p className="text-light-1 body-medium mt-1">
+            { complainedByOwn ? (
+              <p className="text-light-1 body-medium mt-1">
+              You triggered an alarm.
+            </p>
+
+            ) : (
+              <p className="text-light-1 body-medium mt-1">
               User ID: {alert.user?.id || alert.user} triggered an alarm.
             </p>
+
+            )}
+            
             <p className="text-light-3 small-regular mt-1">
               Time: {new Date(alert.timestamp).toLocaleString()}
             </p>

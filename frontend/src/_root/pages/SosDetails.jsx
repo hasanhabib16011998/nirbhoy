@@ -23,7 +23,7 @@ L.Icon.Default.mergeOptions({
 const SosDetails = () => {
   const { id } = useParams();
   const { user } = useUserContext();
-  console.log(user);
+  console.log("user",user);
   const navigate = useNavigate();
   const [alert, setAlert] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +44,7 @@ const SosDetails = () => {
       
       const data = await response.json();
       setAlert(data);
-      console.log(data)
+      console.log("response",data)
     } catch (err) {
       toast.error("Error", { description: err.message });
     } finally {
@@ -181,28 +181,39 @@ const SosDetails = () => {
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="mt-2 flex flex-col gap-3">
-              {!hasResponded ? (
+            {/* Action Buttons & Resolved Info */}
+            {alert.is_active ? (
+              <div className="mt-2 flex flex-col gap-3">
+                {!hasResponded ? (
+                  <button
+                    onClick={handleRespondAlert}
+                    className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full"
+                  >
+                    I Can Respond
+                  </button>
+                ) : (
+                  <div className="p-3 bg-orange-900/40 border border-orange-500 text-orange-500 rounded-lg text-center base-medium">
+                    🏃 You are marked as responding
+                  </div>
+                )}
+                
                 <button
-                  onClick={handleRespondAlert}
-                  className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white base-medium rounded-lg transition-colors w-full"
+                  onClick={handleResolveAlert}
+                  className="px-6 py-3 bg-dark-4 border border-red-500 hover:bg-red-600 text-white base-medium rounded-lg transition-colors w-full"
                 >
-                  I Can Respond
+                  Mark as Resolved
                 </button>
-              ) : (
-                <div className="p-3 bg-orange-900/40 border border-orange-500 text-orange-500 rounded-lg text-center base-medium">
-                  🏃 You are marked as responding
-                </div>
-              )}
-              
-              <button
-                onClick={handleResolveAlert}
-                className="px-6 py-3 bg-dark-4 border border-red-500 hover:bg-red-600 text-white base-medium rounded-lg transition-colors w-full"
-              >
-                Mark as Resolved
-              </button>
-            </div>
+              </div>
+            ) : (
+              <div className="mt-2 p-4 bg-green-900/20 border border-green-500 rounded-lg text-center">
+                <p className="text-green-500 h3-bold flex items-center justify-center gap-2">
+                  ✅ RESOLVED
+                </p>
+                <p className="text-light-2 body-medium mt-1">
+                  This emergency situation has been safely resolved.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* MAP SECTION */}
@@ -223,7 +234,7 @@ const SosDetails = () => {
             
             {/* Fixed Google Maps URL */}
             <a 
-              href={`https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`}
+              href={`https://maps.google.com/?q=${alert.latitude},${alert.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-center p-3 bg-dark-3 hover:bg-dark-4 text-primary-500 rounded-lg base-medium transition-colors border border-dark-4"
