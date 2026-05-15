@@ -10,14 +10,14 @@ export const sidebarLinks = [
       label: "DashBoard",
     },
     {
-      imgURL: "/assets/icons/people.svg",
+      imgURL: "/assets/icons/scale.svg",
       route: "/lawyers",
       label: "Lawyers",
     },
     {
-      imgURL: "/assets/icons/bookmark.svg",
-      route: "/saved",
-      label: "Saved",
+      imgURL: "/assets/icons/phone-call.svg",
+      route: "/contact-us",
+      label: "Contact Us",
     },
     {
       imgURL: "/assets/icons/gallery-add.svg",

@@ -16,7 +16,8 @@ import {
   SosDetails,
   AboutUs,
   LegalAid,
-  LegalAidDetails
+  LegalAidDetails,
+  ContactUs
 } from "@/_root/pages";
 import RootLayout from './_root/RootLayout';
 import './App.css';
@@ -49,6 +50,7 @@ const App = () => {
             <Route path="/sos" element={<SosDashboard />} />
             <Route path="/sos/:id" element={<SosDetails />} />
             <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/contact-us" element={<ContactUs />} />
             <Route path="/legal-aid" element={<LegalAid />} />
             <Route path="/legal-aid/:id" element={<LegalAidDetails />} />
             </Route>
