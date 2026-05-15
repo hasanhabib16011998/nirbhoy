@@ -83,8 +83,8 @@ class ResolveStatusSerializer(serializers.ModelSerializer):
         model = ResolveStatus
         fields = [
             'id', 
-            'is_resolved_user', 'user_review', 
-            'is_resolved_responder', 'responder_review', 
+            'user_submitted_resolve', 'is_resolved_user', 'user_review', 
+            'responder_submitted_resolve', 'is_resolved_responder', 'responder_review', 
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

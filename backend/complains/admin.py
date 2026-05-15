@@ -14,7 +14,7 @@ class ResolveStatusInline(GenericStackedInline):
 @admin.register(SosAlert)
 class SosAlertAdmin(admin.ModelAdmin):
     # What columns show up in the list view
-    list_display = ('user', 'timestamp', 'is_active', 'latitude', 'longitude')
+    list_display = ('user', 'is_active', 'user_resolved', 'responder_resolved', 'timestamp')
     
     # Add filters to the right sidebar
     list_filter = ('is_active', 'timestamp')
@@ -38,6 +38,25 @@ class SosAlertAdmin(admin.ModelAdmin):
         }),
     )
     inlines = [ResolveStatusInline]
+
+    def get_resolve_status(self, obj):
+        # We use get_for_model which is highly cached and efficient in Django
+        ctype = ContentType.objects.get_for_model(obj)
+        return ResolveStatus.objects.filter(content_type=ctype, object_id=obj.id).first()
+
+    # --- NEW: Custom column for User Resolved ---
+    def user_resolved(self, obj):
+        status = self.get_resolve_status(obj)
+        return status.is_resolved_user if status else False
+    user_resolved.boolean = True # Renders as a checkmark/cross
+    user_resolved.short_description = "User Resolved"
+
+    # --- NEW: Custom column for Responder Resolved ---
+    def responder_resolved(self, obj):
+        status = self.get_resolve_status(obj)
+        return status.is_resolved_responder if status else False
+    responder_resolved.boolean = True # Renders as a checkmark/cross
+    responder_resolved.short_description = "Responder Resolved"
 
     def map_view(self, obj):
         """

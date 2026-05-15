@@ -15,9 +15,11 @@ class ResolveStatus(models.Model):
     # Resolution Fields
     is_resolved_user = models.BooleanField(default=False)
     user_review = models.TextField(blank=True, null=True)
+    user_submitted_resolve = models.BooleanField(default=False)
     
     is_resolved_responder = models.BooleanField(default=False)
     responder_review = models.TextField(blank=True, null=True)
+    responder_submitted_resolve = models.BooleanField(default=False)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

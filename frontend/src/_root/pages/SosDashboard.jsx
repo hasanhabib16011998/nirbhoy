@@ -262,7 +262,7 @@ const SosDashboard = () => {
                 onClick={stopEmergency}
                 className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
               >
-                Stop SOS (Without Review)
+                Stop SOS
               </button>
             </div>
           )}
