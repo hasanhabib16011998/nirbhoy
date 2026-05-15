@@ -44,4 +44,4 @@
 3. Use checkbox/dropdown for resolve(done)
 4. bring is resolve status (user/volunteer) in admin panel(done)
 5. User cant change their phone number (done)
-6. contact us page instead of saved.
+6. contact us page instead of saved.(done)

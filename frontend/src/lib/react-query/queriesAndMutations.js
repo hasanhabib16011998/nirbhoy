@@ -31,7 +31,8 @@ import {
   fetchActiveSos,
   fetchSosById,
   triggerSosAlert,
-  resolveSosAlert
+  resolveSosAlert,
+  getUserLikedPosts
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -135,6 +136,14 @@ export const useGetUserPosts = (userId) => {
   return useQuery({
     queryKey: ["getUserPosts", userId],
     queryFn: () => getUserPosts(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetLikedPosts = (userId) => {
+  return useQuery({
+    queryKey: ["getLikedPosts", userId],
+    queryFn: () => getUserLikedPosts(userId),
     enabled: !!userId,
   });
 };

@@ -91,6 +91,16 @@ class UserSavedPostsView(generics.ListAPIView):
     def get_queryset(self):
         return SavedPost.objects.filter(user=self.request.user).order_by('-created_at')
     
+class UserLikedPostsAPIView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Retrieve the user_id from the URL
+        user_id = self.kwargs['user_id']
+        # Filter posts where this user_id is in the 'likes' ManyToMany field
+        return Post.objects.filter(likes__id=user_id).order_by('-created_at')
+    
 class PostDetailView(generics.RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer

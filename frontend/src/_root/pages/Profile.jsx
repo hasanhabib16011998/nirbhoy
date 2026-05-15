@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById } from "@/lib/react-query/queriesAndMutations";
+import { useGetUserById, useGetUserPosts, useGetLikedPosts } from "@/lib/react-query/queriesAndMutations";
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 
@@ -27,6 +27,8 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
+  const { data: userPosts, isLoading: isUserPostsLoading } = useGetUserPosts(id || "");
+  const { data: likedPosts, isLoading: isLikedPostsLoading } = useGetLikedPosts(id || "");
   console.log(currentUser);
 
   if (!currentUser)
@@ -163,11 +165,31 @@ const Profile = () => {
       <Routes>
         <Route
           index
-          element={<GridPostList posts={currentUser.posts || []} showUser={false} />}
+          element={
+            isUserPostsLoading ? (
+              <div className="w-full flex-center"><Loader /></div>
+            ) : (
+              <GridPostList posts={userPosts || []} showUser={false} />
+            )
+          }
         />
-        {/* FIXED: Replaced currentUser.$id with isOwnProfile */}
+        
+        {/* ✅ DIRECTLY USE GRIDPOSTLIST FOR LIKED POSTS */}
         {isOwnProfile && (
-          <Route path="/liked-posts" element={<LikedPosts />} />
+          <Route 
+            path="/liked-posts" 
+            element={
+              isLikedPostsLoading ? (
+                <div className="w-full flex-center"><Loader /></div>
+              ) : likedPosts?.length === 0 ? (
+                <p className="text-light-4 text-center w-full mt-10 base-medium">
+                  No liked posts found.
+                </p>
+              ) : (
+                <GridPostList posts={likedPosts || []} showStats={false} />
+              )
+            } 
+          />
         )}
       </Routes>
       <Outlet />

@@ -336,27 +336,26 @@ export async function getUserPosts(userId) {
   if (!userId) return null;
 
   try {
-    const token = localStorage.getItem("accessToken");
-
-    const response = await fetch(`${API_BASE_URL}/posts/user/${userId}/`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+    const response = await axios.get(`${API_BASE_URL}/posts/user/${userId}/`,{
+      headers: getAuthHeaders(),
     });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch user posts");
-    }
-
-    const data = await response.json();
-
-    // Wrap in 'documents' to match your existing app structure if needed,
-    // otherwise just return 'data'
-    return { documents: data };
+    return response.data;
   } catch (error) {
     console.log("Get User Posts Error:", error);
+    return null;
+  }
+}
+
+export async function getUserLikedPosts(userId) {
+  if (!userId) return null;
+
+  try {
+    const response = await axios.get(`${API_BASE_URL}/posts/user/${userId}/liked/`, {
+      headers: getAuthHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.log("Get Liked Posts Error:", error);
     return null;
   }
 }
