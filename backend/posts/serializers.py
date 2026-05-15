@@ -50,6 +50,11 @@ class SavedPostSerializer(serializers.ModelSerializer):
         model = SavedPost
         fields = ['id', 'user', 'post', 'created_at']
 
+    def to_representation(self, instance):
+        # Get the standard serialized data (which includes id, user, post, created_at)
+        data = super().to_representation(instance)
+        return data['post']
+
 class CommentUserSerializer(serializers.ModelSerializer):
     profile_image_url = serializers.ReadOnlyField(source='get_full_image_url')
     class Meta:

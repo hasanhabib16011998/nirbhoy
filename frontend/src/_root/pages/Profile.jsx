@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useGetUserPosts, useGetLikedPosts } from "@/lib/react-query/queriesAndMutations";
+import { useGetUserById, useGetUserPosts, useGetLikedPosts, useGetSavedPosts } from "@/lib/react-query/queriesAndMutations";
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 
@@ -29,6 +29,7 @@ const Profile = () => {
   const { data: currentUser } = useGetUserById(id || "");
   const { data: userPosts, isLoading: isUserPostsLoading } = useGetUserPosts(id || "");
   const { data: likedPosts, isLoading: isLikedPostsLoading } = useGetLikedPosts(id || "");
+  const { data: savedPosts, isLoading: isSavedPostsLoading } = useGetSavedPosts();
   console.log(currentUser);
 
   if (!currentUser)
@@ -130,7 +131,7 @@ const Profile = () => {
       </div>
 
       {isOwnProfile && (
-        <div className="flex max-w-5xl w-full">
+        <div className="flex max-w-5xl w-full gap-2">
           <Link
             to={`/profile/${id}`}
             className={`profile-tab rounded-l-lg ${
@@ -158,6 +159,20 @@ const Profile = () => {
               height={20}
             />
             Liked Posts
+          </Link>
+          <Link
+            to={`/profile/${id}/saved-posts`}
+            className={`profile-tab rounded-r-lg ${
+              pathname === `/profile/${id}/saved-posts` && "bg-dark-3"
+            }`}
+          >
+            <img
+              src={"/assets/icons/saved.svg"}
+              alt="like"
+              width={20}
+              height={20}
+            />
+            Saved Posts
           </Link>
         </div>
       )}
@@ -187,6 +202,23 @@ const Profile = () => {
                 </p>
               ) : (
                 <GridPostList posts={likedPosts || []} showStats={false} />
+              )
+            } 
+          />
+        )}
+
+        {isOwnProfile && (
+          <Route 
+            path="/saved-posts" 
+            element={
+              isSavedPostsLoading ? (
+                <div className="w-full flex-center"><Loader /></div>
+              ) : savedPosts?.length === 0 ? (
+                <p className="text-light-4 text-center w-full mt-10 base-medium">
+                  No saved posts found.
+                </p>
+              ) : (
+                <GridPostList posts={savedPosts || []} showStats={false} />
               )
             } 
           />

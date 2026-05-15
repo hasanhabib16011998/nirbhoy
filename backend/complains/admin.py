@@ -87,8 +87,8 @@ class SosAlertAdmin(admin.ModelAdmin):
 
 @admin.register(LegalAidApplication)
 class LegalAidApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'applicant', 'caption', 'status', 'created_at')
-    list_display_links = ('id', 'applicant', 'caption')
+    list_display = ('id', 'applicant', 'user_resolved', 'responder_resolved', 'status', 'created_at')
+    list_display_links = ('id', 'applicant',)
     list_filter = ('status', 'created_at')
     
     # Search across the application details AND the applicant's user data
@@ -99,3 +99,21 @@ class LegalAidApplicationAdmin(admin.ModelAdmin):
     
     inlines = [AttachmentInline, ResolveStatusInline]
     
+    def get_resolve_status(self, obj):
+        # We use get_for_model which is highly cached and efficient in Django
+        ctype = ContentType.objects.get_for_model(obj)
+        return ResolveStatus.objects.filter(content_type=ctype, object_id=obj.id).first()
+
+    # --- NEW: Custom column for User Resolved ---
+    def user_resolved(self, obj):
+        status = self.get_resolve_status(obj)
+        return status.is_resolved_user if status else False
+    user_resolved.boolean = True # Renders as a checkmark/cross
+    user_resolved.short_description = "User Resolved"
+
+    # --- NEW: Custom column for Responder Resolved ---
+    def responder_resolved(self, obj):
+        status = self.get_resolve_status(obj)
+        return status.is_resolved_responder if status else False
+    responder_resolved.boolean = True # Renders as a checkmark/cross
+    responder_resolved.short_description = "Responder Resolved"
