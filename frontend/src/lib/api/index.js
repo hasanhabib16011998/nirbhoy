@@ -391,28 +391,14 @@ export async function getUserById(userId) {
 
 export async function updateUser({ id, userData }) {
   try {
-    const token = localStorage.getItem("accessToken");
-
-    const response = await fetch(`${API_BASE_URL}/users/${id}/`, {
-      method: "PATCH",
-      headers: {
-        // The browser will set it automatically for FormData.
-        Authorization: `Bearer ${token}`,
-      },
-      body: userData,
+    const response = await axios.patch(`${API_BASE_URL}/users/${id}/`, userData, {
+      headers: getAuthHeaders()
     });
 
-    if (!response.ok) {
-      // Log the error body to see what Django is complaining about
-      const errorData = await response.json();
-      console.error("Server Error Details:", errorData);
-      throw new Error("Failed to update profile");
-    }
-
-    return await response.json();
+    return response.data;
   } catch (error) {
-    console.log("Update User Error:", error);
-    throw error;
+    console.error("Server Error Details:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Failed to update profile");
   }
 }
 

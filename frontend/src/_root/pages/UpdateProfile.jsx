@@ -12,11 +12,10 @@ import Loader from "@/components/shared/Loader";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useUpdateUser } from "@/lib/react-query/queriesAndMutations";
 
-// 1. Validation for the actual fields in your DB
+// 1. Validation (Phone number removed)
 const ProfileValidation = z.object({
   first_name: z.string().min(2, { message: "First name must be at least 2 characters." }),
   last_name: z.string().min(2, { message: "Last name must be at least 2 characters." }),
-  phone_number: z.string().optional(),
   address: z.string().optional(),
 });
 
@@ -32,13 +31,12 @@ export default function UpdateProfile() {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
 
-  // 3. Setup form matching your DB
+  // 3. Setup form (Phone number removed)
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(ProfileValidation),
     defaultValues: {
       first_name: "",
       last_name: "",
-      phone_number: "",
       address: "",
     },
   });
@@ -46,11 +44,9 @@ export default function UpdateProfile() {
   // 4. Pre-fill data and image URL
   useEffect(() => {
     if (currentUser) {
-      console.log(currentUser);
       reset({
         first_name: currentUser.first_name || "",
         last_name: currentUser.last_name || "",
-        phone_number: currentUser.phone_number || "",
         address: currentUser.address || "",
       });
       
@@ -88,11 +84,10 @@ export default function UpdateProfile() {
     formData.append("first_name", values.first_name);
     formData.append("last_name", values.last_name);
     
-    // Only append if they exist so we don't accidentally send empty strings to DB
-    if (values.phone_number) formData.append("phone_number", values.phone_number);
+    // Only append if it exists
     if (values.address) formData.append("address", values.address);
     
-    // Append the actual file if a new one was selected (must match your Django model field name)
+    // Append the actual file if a new one was selected
     if (file) {
       formData.append("profile_image", file); 
     }
@@ -167,13 +162,6 @@ export default function UpdateProfile() {
               <Input type="text" className="shad-input" {...register("last_name")} />
               {errors.last_name && <p className="text-red text-sm">{errors.last_name.message}</p>}
             </div>
-          </div>
-
-          {/* Phone Number */}
-          <div className="space-y-2">
-            <label className="shad-form_label text-sm font-medium">Phone Number</label>
-            <Input type="text" className="shad-input" {...register("phone_number")} />
-            {errors.phone_number && <p className="text-red text-sm">{errors.phone_number.message}</p>}
           </div>
 
           {/* Address */}
