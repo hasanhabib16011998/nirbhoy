@@ -73,7 +73,7 @@ const ResolutionPanel = ({ modelName, objectId, onResolveParent, isMainActive })
                className="w-full p-3 rounded-lg bg-dark-3 text-light-1 border border-dark-4 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-24"
              />
              <Button onClick={handleResolve} disabled={isPending} className="shad-button_primary w-full py-6">
-               {isPending ? "Submitting..." : "Submit Review & Mark Resolved"}
+               {isPending ? "Submitting..." : "Give feedback to Nirbhoy"}
              </Button>
            </div>
         )
@@ -92,7 +92,7 @@ const ResolutionPanel = ({ modelName, objectId, onResolveParent, isMainActive })
                className="w-full p-3 rounded-lg bg-dark-3 text-light-1 border border-dark-4 focus:ring-2 focus:ring-red-500 outline-none resize-none h-24"
              />
              <Button onClick={handleResolve} disabled={isPending} className="bg-dark-4 border border-red-500 hover:bg-red-600 text-white w-full py-6 transition-colors">
-               {isPending ? "Submitting..." : "Submit Report & Mark Resolved"}
+               {isPending ? "Submitting..." : "Give feedback to Nirbhoy"}
              </Button>
            </div>
         )

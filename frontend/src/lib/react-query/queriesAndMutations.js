@@ -27,7 +27,11 @@ import {
   fetchComments,
   addComment,
   fetchResolveStatus,
-  updateResolveStatus
+  updateResolveStatus,
+  fetchActiveSos,
+  fetchSosById,
+  triggerSosAlert,
+  resolveSosAlert
 } from "../api/index";
 
 export const useCreateUserAccount = () => {
@@ -243,6 +247,48 @@ export const useUpdateResolveStatus = () => {
       queryClient.invalidateQueries({
         queryKey: ['resolveStatus', variables.modelName, variables.objectId]
       });
+    },
+  });
+};
+
+// Checks for an active SOS when the dashboard mounts
+export const useGetActiveSos = () => {
+  return useQuery({
+    queryKey: ['activeSos'],
+    queryFn: fetchActiveSos,
+    // We only need to check this once on mount, so we disable automatic background refetches
+    refetchOnWindowFocus: false, 
+  });
+};
+
+// Polls the specific SOS for updates (like new responders)
+export const useGetSosUpdates = (id, isTracking) => {
+  return useQuery({
+    queryKey: ['sosDetails', id],
+    queryFn: () => fetchSosById(id),
+    enabled: !!id && isTracking, // Only run if we have an ID AND are actively tracking
+    refetchInterval: 5000, // Automates your 5-second polling!
+  });
+};
+
+export const useTriggerSos = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: triggerSosAlert,
+    onSuccess: (data) => {
+      // Pre-populate the cache with the new SOS data immediately
+      queryClient.setQueryData(['sosDetails', data.data.id], data.data);
+      queryClient.invalidateQueries({ queryKey: ['activeSos'] });
+    },
+  });
+};
+
+export const useResolveSos = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: resolveSosAlert,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeSos'] });
     },
   });
 };

@@ -2,17 +2,22 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetResolveStatus, useUpdateResolveStatus } from '@/lib/react-query/queriesAndMutations';
+import { 
+  useGetActiveSos, 
+  useGetSosUpdates, 
+  useTriggerSos, 
+  useResolveSos 
+} from '@/lib/react-query/queriesAndMutations';
 
-// --- IMPORT CHAT COMPONENT ---
+// --- IMPORT COMPONENTS ---
 import Chat from '@/components/shared/Chat';
+import ResolutionPanel from '@/components/shared/ResolutionPanel'; 
 
-// --- NEW LEAFLET IMPORTS ---
+// --- LEAFLET IMPORTS ---
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// --- FIX FOR LEAFLET DEFAULT ICONS IN REACT ---
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -24,73 +29,47 @@ const SosDashboard = () => {
   const { user } = useUserContext();
   const navigate = useNavigate();
   
+  // --- LOCAL UI STATE ---
   const [isTracking, setIsTracking] = useState(false);
   const [watchId, setWatchId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [backendResponse, setBackendResponse] = useState("");
-  
   const [currentLocation, setCurrentLocation] = useState(null);
   const [details, setDetails] = useState(""); 
-  const [userReview, setUserReview] = useState(""); // ✅ State for resolution message
+  const [activeAlertId, setActiveAlertId] = useState(null);
 
   const hasTriggeredBackend = useRef(false);
-  const [activeAlert, setActiveAlert] = useState(null);
-  const token = localStorage.getItem("accessToken");
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-  // ✅ TanStack Queries for Resolve Status
-  const { data: resolveStatus } = useGetResolveStatus(
-    activeAlert ? "sosalert" : null, 
-    activeAlert?.id
-  );
-  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } = useUpdateResolveStatus();
+  // --- TANSTACK QUERIES & MUTATIONS ---
+  const { data: initialActiveSos } = useGetActiveSos();
+  const { data: polledAlert } = useGetSosUpdates(activeAlertId, isTracking);
+  const { mutateAsync: triggerSosAsync } = useTriggerSos();
+  const { mutateAsync: resolveSosAsync } = useResolveSos();
+  
+  // The actual alert data to display (prioritizes fresh polled data over initial mount data)
+  const activeAlert = polledAlert || initialActiveSos || null;
 
+  // --- INITIAL MOUNT LOGIC ---
   useEffect(() => {
-    const fetchActiveSos = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/complains/active/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+    // If the query finds an active SOS on mount, restore tracking state
+    if (initialActiveSos && !hasTriggeredBackend.current) {
+      setActiveAlertId(initialActiveSos.id);
+      setDetails(initialActiveSos.message || "");
+      setIsTracking(true);
+      hasTriggeredBackend.current = true; 
+      startGpsTracking(); 
+    }
+  }, [initialActiveSos]); 
 
-        if (response.ok) {
-          const data = await response.json();
-          setActiveAlert(data);
-          setDetails(data.message || "");
-          setIsTracking(true);
-          hasTriggeredBackend.current = true; 
-          startGpsTracking(); 
-        }
-      } catch (error) {
-        console.error("Error fetching active SOS:", error);
-      }
-    };
-
-    fetchActiveSos();
-  }, []); 
-
+  // --- GPS & TRIGGER LOGIC ---
   const sendInitialSosToBackend = async (latitude, longitude, message) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/complains/trigger/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ latitude, longitude, message }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to broadcast to server.");
-      }
-
+      const data = await triggerSosAsync({ latitude, longitude, message });
       setBackendResponse(data.message);
-      setActiveAlert(data.data);
-      
+      setActiveAlertId(data.data.id); // Setting this ID automatically starts the polling query!
     } catch (error) {
       console.error("Backend SOS error:", error);
-      setErrorMsg(error.message);
+      setErrorMsg(error.response?.data?.detail || error.message || "Failed to broadcast to server.");
     }
   };
 
@@ -108,6 +87,7 @@ const SosDashboard = () => {
 
         setCurrentLocation({ lat: formattedLat, lng: formattedLng });
         
+        // Only trigger the POST request if we haven't done it yet
         if (!hasTriggeredBackend.current) {
           hasTriggeredBackend.current = true;
           sendInitialSosToBackend(formattedLat, formattedLng, details);
@@ -128,37 +108,20 @@ const SosDashboard = () => {
     setIsTracking(true);
     setErrorMsg("");
     setBackendResponse("");
-    setActiveAlert(null);
-    setUserReview(""); // Reset review
+    setActiveAlertId(null);
     hasTriggeredBackend.current = false; 
-
     startGpsTracking(); 
   };
 
   const stopEmergency = async () => {
-    if (activeAlert?.id) {
+    if (activeAlertId) {
        try {
-         // ✅ 1. Update the Generic ResolveStatus table first
-         await updateStatus({
-           modelName: "sosalert",
-           objectId: activeAlert.id,
-           updateData: {
-             is_resolved_user: true,
-             user_review: userReview.trim() || "Emergency ended by user."
-           }
-         });
-
-         // ✅ 2. Resolve the main SOS Alert to deactivate it
-         await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/resolve/`, { 
-           method: "PATCH",
-           headers: { 'Authorization': `Bearer ${token}` }
-         });
+         await resolveSosAsync(activeAlertId);
        } catch (err) {
          console.error("Failed to resolve SOS on backend", err);
        }
     }
 
-    // Cleanup local state
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
       setWatchId(null);
@@ -169,37 +132,10 @@ const SosDashboard = () => {
     setBackendResponse("");
     setCurrentLocation(null); 
     setDetails(""); 
-    setUserReview("");
-    setActiveAlert(null);
+    setActiveAlertId(null);
   };
 
-  // Polling for updates
-  useEffect(() => {
-    let intervalId;
-    const fetchAlertUpdates = async () => {
-      if (!activeAlert?.id) return;
-      try {
-        const response = await fetch(`${API_BASE_URL}/complains/${activeAlert.id}/`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setActiveAlert(data); 
-        }
-      } catch (error) {
-        console.error("Error polling SOS updates:", error);
-      }
-    };
-
-    if (isTracking && activeAlert?.id) {
-      intervalId = setInterval(fetchAlertUpdates, 5000);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isTracking, activeAlert?.id, API_BASE_URL]);
-
+  // Cleanup GPS on unmount
   useEffect(() => {
     return () => {
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
@@ -208,7 +144,6 @@ const SosDashboard = () => {
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-dark-1 p-6 md:p-10">
-      
       <div className={`w-full flex flex-col xl:flex-row gap-8 items-start justify-center transition-all duration-300 ${isTracking ? 'max-w-6xl' : 'max-w-md'}`}>
         
         {/* LEFT COLUMN: SOS Dashboard Controls */}
@@ -312,38 +247,22 @@ const SosDashboard = () => {
                 <span className="body-bold text-red-500">LIVE BROADCASTING...</span>
               </div>
 
-              {/* ✅ NEW: Check if Responder resolved it */}
-              {resolveStatus?.is_resolved_responder && (
-                <div className="w-full p-4 bg-green-900/30 border border-green-500 rounded-lg">
-                  <p className="text-green-500 body-bold flex items-center justify-center gap-2">
-                    ✅ A responder has marked this safe.
-                  </p>
-                  <p className="text-light-2 small-medium mt-1">
-                    Responder Note: "{resolveStatus.responder_review}"
-                  </p>
+              {/* ✅ Reusable Resolution Panel seamlessly integrated */}
+              {activeAlertId && (
+                <div className="w-full text-left">
+                  <ResolutionPanel 
+                    modelName="sosalert"
+                    objectId={activeAlertId}
+                    isMainActive={true}
+                  />
                 </div>
               )}
               
-              {/* ✅ NEW: Resolution Review Input */}
-              <div className="w-full flex flex-col items-start gap-2">
-                <label className="text-light-2 small-medium ml-1">
-                  Resolution Note (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={userReview}
-                  onChange={(e) => setUserReview(e.target.value)}
-                  placeholder="I am safe now, thank you!"
-                  className="w-full p-3 rounded-lg bg-dark-3 text-light-1 border border-dark-4 focus:ring-2 focus:ring-primary-500 outline-none"
-                />
-              </div>
-
               <button
                 onClick={stopEmergency}
-                disabled={isUpdatingStatus}
-                className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors disabled:opacity-50"
+                className="w-full py-4 bg-light-2 text-dark-1 h3-bold rounded-lg hover:bg-white transition-colors"
               >
-                {isUpdatingStatus ? "Resolving..." : "Mark as Resolved & Stop SOS"}
+                Stop SOS (Without Review)
               </button>
             </div>
           )}
@@ -357,11 +276,11 @@ const SosDashboard = () => {
         </div>
 
         {/* RIGHT COLUMN: Chat (Only visible when SOS is active) */}
-        {isTracking && activeAlert?.id && (
+        {isTracking && activeAlertId && (
           <div className="w-full xl:w-[450px] shrink-0 transition-all duration-300">
             <Chat 
               modelName="sosalert" 
-              objectId={activeAlert.id} 
+              objectId={activeAlertId} 
               title="Live Coordination"
             />
           </div>

@@ -1,6 +1,11 @@
 import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem("accessToken");
+  return { Authorization: `Bearer ${token}` };
+};
+
 export async function createUserAccount(user) {
   try {
     const response = await fetch(`${API_BASE_URL}/users/register/`, {
@@ -520,5 +525,39 @@ export const updateResolveStatus = async ({ modelName, objectId, updateData }) =
     updateData,
     { headers: { Authorization: `Bearer ${token}` } }
   );
+  return response.data;
+};
+
+export const fetchActiveSos = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/complains/active/`, {
+      headers: getAuthHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    // A 404 just means no active SOS exists right now. Return null instead of an error.
+    if (error.response?.status === 404) return null;
+    throw error;
+  }
+};
+
+export const fetchSosById = async (id) => {
+  const response = await axios.get(`${API_BASE_URL}/complains/${id}/`, {
+    headers: getAuthHeaders(),
+  });
+  return response.data;
+};
+
+export const triggerSosAlert = async (sosData) => {
+  const response = await axios.post(`${API_BASE_URL}/complains/trigger/`, sosData, {
+    headers: getAuthHeaders(),
+  });
+  return response.data;
+};
+
+export const resolveSosAlert = async (id) => {
+  const response = await axios.patch(`${API_BASE_URL}/complains/${id}/resolve/`, {}, {
+    headers: getAuthHeaders(),
+  });
   return response.data;
 };
