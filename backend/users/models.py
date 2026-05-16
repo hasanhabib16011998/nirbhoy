@@ -26,7 +26,7 @@ class User(AbstractUser):
 
 class LawyerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='lawyer_profile')
-    bar_council_id = models.CharField(max_length=50, unique=True)
+    bar_council_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     bar_council_id_file = models.FileField(
         upload_to='lawyer_docs/', 
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
