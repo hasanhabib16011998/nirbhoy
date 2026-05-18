@@ -45,3 +45,14 @@
 4. bring is resolve status (user/volunteer) in admin panel(done)
 5. User cant change their phone number (done)
 6. contact us page instead of saved.(done)
+
+18 May 2026
+1. Password validation in pro registration
+2. Phone number validation
+3. profile image optional
+4. Pro registration verification by admin
+5. Anonymous post in front end layer
+6. Lawyer profile admin panel e responding case number
+7. Forget password with otp
+
+
