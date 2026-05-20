@@ -98,10 +98,6 @@ export default function ProSignUpForm() {
     // Append Profile Image (FileUploader returns an array of files, we just want the first one)
     if (values.profile_image && values.profile_image.length > 0) {
       formData.append("profile_image", values.profile_image[0]);
-    } else {
-      toast.error("Profile Image is required");
-      setIsLoading(false);
-      return;
     }
 
     // Append Conditional Documents based on Role
