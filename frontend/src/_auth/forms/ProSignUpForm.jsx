@@ -1,7 +1,6 @@
 // src/pages/ProSignUpForm.jsx
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/shared/PasswordInput";
@@ -10,11 +9,32 @@ import { createProfessionalAccount } from "@/lib/api";
 import FileUploader from "@/components/shared/FileUploader";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+import { ProSignupValidation } from "@/lib/validation";
+
 
 export default function ProSignUpForm() {
   const navigate = useNavigate();
   const [role, setRole] = useState("Volunteer");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { 
+    register, 
+    handleSubmit, 
+    control, 
+    formState: { errors } 
+  } = useForm({
+    resolver: zodResolver(ProSignupValidation),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone_number: "",
+      address: "",
+      password: "",
+    }
+  });
 
   // --- OTP States ---
   const [showOtp, setShowOtp] = useState(false);
@@ -24,8 +44,6 @@ export default function ProSignUpForm() {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
-  // Initialize React Hook Form
-  const { register, handleSubmit, control, formState: { errors } } = useForm();
 
   // --- OTP Mutation & Handlers ---
   const verifyOtpMutation = useMutation({
@@ -168,37 +186,54 @@ return (
             <div className="flex flex-col md:flex-row gap-4">
               <div className="w-full space-y-2">
                 <label className="text-sm font-medium text-white">First Name</label>
-                <Input {...register("first_name", { required: true })} className="shad-input" />
+                <Input {...register("first_name")} className="shad-input" />
+                {errors.first_name && (
+                  <p className="text-[0.8rem] font-medium text-red-500">{errors.first_name.message}</p>
+                )}
               </div>
               <div className="w-full space-y-2">
                 <label className="text-sm font-medium text-white">Last Name</label>
-                <Input {...register("last_name", { required: true })} className="shad-input" />
+                <Input {...register("last_name")} className="shad-input" />
+                {errors.last_name && (
+                  <p className="text-[0.8rem] font-medium text-red-500">{errors.last_name.message}</p>
+                )}
               </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Email</label>
-              <Input type="email" {...register("email", { required: true })} className="shad-input" />
+              <Input type="email" {...register("email")} className="shad-input" />
+              {errors.email && (
+                <p className="text-[0.8rem] font-medium text-red-500">{errors.email.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Phone Number</label>
-              <Input type="tel" {...register("phone_number", { required: true })} className="shad-input" />
+              <Input type="tel" {...register("phone_number")} className="shad-input" />
+              {errors.phone_number && (
+                <p className="text-[0.8rem] font-medium text-red-500">{errors.phone_number.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Address</label>
-              <Input type="text" {...register("address", { required: true })} className="shad-input" />
+              <Input type="text" {...register("address")} className="shad-input" />
+              {errors.address && (
+                <p className="text-[0.8rem] font-medium text-red-500">{errors.address.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Password</label>
               <PasswordInput 
                 className="shad-input"
-                {...register("password", { required: true })} 
+                {...register("password")} 
               />
+              {errors.password && (
+                <p className="text-[0.8rem] font-medium text-red-500">{errors.password.message}</p>
+              )}
             </div>
-
             {/* --- FILE UPLOADERS --- */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-white">Profile Image</label>
@@ -262,7 +297,7 @@ return (
                   if (el) inputRefs.current[index] = el;
                 }}
                 maxLength={1}
-                className="w-12 h-12 text-center border border-gray-300 outline-none !rounded-xl"
+                className="w-12 h-12 text-center border border-gray-300 outline-none rounded-xl!"
                 value={digit}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(index, e)}

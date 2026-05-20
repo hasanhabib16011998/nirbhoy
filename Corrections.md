@@ -47,8 +47,8 @@
 6. contact us page instead of saved.(done)
 
 18 May 2026
-1. Password validation in pro registration
-2. Phone number validation
+1. Password validation in pro registration (done)
+2. Phone number validation (done)
 3. profile image optional
 4. Pro registration verification by admin
 5. Anonymous post in front end layer

@@ -166,4 +166,4 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-BACKEND_URL = "http://192.168.0.103:8000"
+BACKEND_URL = "http://192.168.0.102:8000"

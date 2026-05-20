@@ -6,13 +6,32 @@ export const SigninValidation = z.object({
 });
 
 export const SignupValidation = z.object({
-  first_name: z.string().min(2, "First name too short"),
-  last_name: z.string().min(2, "Last name too short"),
+  first_name: z.string().min(3, "First name too short"),
+  last_name: z.string().min(3, "Last name too short"),
   email: z.string().email("Invalid email address"),
-  phone_number: z.string().regex(/^[\d\s\-\+\(\)]+$/, "Invalid phone number"),
+  phone_number: z.string()
+  .length(11, { message: "Phone number must be exactly 11 digits." })
+  .regex(/^\d+$/, { message: "Phone number can only contain numbers." }),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.string().default("Survivor"),
   is_anonymous_user: z.boolean().default(false),
+});
+
+export const ProSignupValidation = z.object({
+  first_name: z.string().min(3, { message: "First name too short" }),
+  last_name: z.string().min(3, { message: "Last name too short" }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  phone_number: z.string()
+  .length(11, { message: "Phone number must be exactly 11 digits." })
+  .regex(/^\d+$/, { message: "Phone number can only contain numbers." }),
+  address: z.string().min(5, { message: "Please enter a valid address." }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  
+  // We use any().optional() here because your onSubmit function already 
+  // includes excellent manual validation for checking if these files exist.
+  profile_image: z.any().optional(),
+  nid_file: z.any().optional(),
+  bar_council_id_file: z.any().optional(),
 });
 
 export const PostValidation = z.object({
