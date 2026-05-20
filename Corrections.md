@@ -49,8 +49,8 @@
 18 May 2026
 1. Password validation in pro registration (done)
 2. Phone number validation (done)
-3. profile image optional
-4. Pro registration verification by admin
+3. profile image optional (done)
+4. Pro registration verification by admin(done)
 5. Anonymous post in front end layer (done)
 6. Lawyer profile admin panel e responding case number
 7. Forget password with otp

@@ -78,10 +78,11 @@ class ProRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.is_verified = False # Pros must be manually verified by admins
         user.save()
+        
 
         # Assign Role
         try:
-            group = Group.objects.get(name=role_name)
+            group = Group.objects.get(name='Survivor')
             user.groups.add(group)
         except Group.DoesNotExist:
             pass
