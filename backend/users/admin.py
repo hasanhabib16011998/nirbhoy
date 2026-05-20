@@ -40,7 +40,7 @@ admin.site.register(User, CustomUserAdmin)
 
 class LawyerProfileAdmin(admin.ModelAdmin):
     # Columns for the Lawyer table
-    list_display = ['get_user_name', 'bar_council_id', 'specialization']
+    list_display = ['get_user_name', 'bar_council_id', 'specialization','get_active_cases_count']
     
     # Search by User's email or Bar ID
     search_fields = ['user__email', 'user__first_name', 'bar_council_id', 'specialization']
@@ -52,6 +52,13 @@ class LawyerProfileAdmin(admin.ModelAdmin):
     def get_user_name(self, obj):
         return f"{obj.user.first_name} {obj.user.last_name} ({obj.user.email})"
     get_user_name.short_description = 'Lawyer User'
+
+    def get_active_cases_count(self, obj):
+        # Count the applications linked to this user, excluding 'Closed' status
+        count = obj.user.responding_to_aid.exclude(status='Closed').count()
+        return count
+        
+    get_active_cases_count.short_description = 'Active Cases'
 
 admin.site.register(LawyerProfile, LawyerProfileAdmin)
 
