@@ -51,7 +51,7 @@
 2. Phone number validation (done)
 3. profile image optional
 4. Pro registration verification by admin
-5. Anonymous post in front end layer
+5. Anonymous post in front end layer (done)
 6. Lawyer profile admin panel e responding case number
 7. Forget password with otp
 

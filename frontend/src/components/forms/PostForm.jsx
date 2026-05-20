@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import FileUploader from "../shared/FileUploader";
 import Loader from "../shared/Loader";
@@ -30,6 +31,7 @@ const PostForm = ({ post, action }) => {
       file: [],
       location: post ? post.location : "",
       tags: post ? post.tags : "",
+      is_anonymous: post ? post.is_anonymous : false,
     },
   });
 
@@ -55,6 +57,7 @@ const PostForm = ({ post, action }) => {
       formData.append("caption", value.caption || "");
       formData.append("location", value.location || "");
       formData.append("tags", value.tags || "");
+      formData.append("is_anonymous", value.is_anonymous ? "True" : "False");
 
       // ✅ 3. Loop through files and append them to "attachments"
       if (value.file && value.file.length > 0) {
@@ -143,6 +146,27 @@ const PostForm = ({ post, action }) => {
         {errors.tags && (
           <p className="shad-form_message">{errors.tags.message}</p>
         )}
+      </div>
+      {/* Anonymous Post Checkbox */}
+      <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-dark-4 p-4 mt-2">
+        <Controller
+          name="is_anonymous"
+          control={control}
+          render={({ field }) => (
+            <Checkbox
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
+          )}
+        />
+        <div className="space-y-1 leading-none">
+          <label className="shad-form_label">
+            Post Anonymously?
+          </label>
+          <p className="text-[0.8rem] text-light-3">
+            We will hide your identity from the public feed.
+          </p>
+        </div>
       </div>
 
       {/* Action Buttons */}

@@ -80,7 +80,14 @@ const PostCard = ({ post }) => {
     volunteer: "text-emerald-500", 
   };
   const authorRole = post.author?.role?.toLowerCase() || "";
+  const isAnonymous = post.is_anonymous;
+  const displayUsername = isAnonymous ? "Anonymous User" : post.author.username;
+  const displayImage = isAnonymous 
+    ? "/assets/icons/profile-placeholder.svg" 
+    : (post.author?.profile_image || "/assets/icons/profile-placeholder.svg");
+
   const shouldShowBadge = roleColorMap.hasOwnProperty(authorRole);
+  const displayBadge = isAnonymous ? false : shouldShowBadge;
   const iconColorClass = roleColorMap[authorRole] || "";
 
   const handleChatClick = (e) => {
@@ -120,29 +127,40 @@ const PostCard = ({ post }) => {
       {/* Header Profile Section */}
       <div className="flex-between">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${post.author.id}`}>
+          
+          {/* If Anonymous, just show the image. If not, wrap it in a Link */}
+          {isAnonymous ? (
             <img
-              src={post.author?.profile_image || "/assets/icons/profile-placeholder.svg"}
-              alt="creator"
+              src={displayImage}
+              alt="anonymous creator"
               className="w-12 lg:h-12 rounded-full object-cover"
             />
-          </Link>
+          ) : (
+            <Link to={`/profile/${post.author.id}`}>
+              <img
+                src={displayImage}
+                alt="creator"
+                className="w-12 lg:h-12 rounded-full object-cover"
+              />
+            </Link>
+          )}
 
           <div className="flex items-center gap-1.5">
-              <p className="base-medium lg:body-bold text-light-1">
-                {post.author.username}
-              </p>
-              
-              {shouldShowBadge && (
-                <span className={`${iconColorClass}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 lg:size-5" title={`${post.author.role} Verified`}>
-                    <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
-                  </svg>
-                </span>
-              )}
-            </div>
+            <p className="base-medium lg:body-bold text-light-1">
+              {displayUsername}
+            </p>
+            
+            {displayBadge && (
+              <span className={`${iconColorClass}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 lg:size-5" title={`${post.author.role} Verified`}>
+                  <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
+                </svg>
+              </span>
+            )}
+          </div>
         </div>
 
+        {/* The actual author can still see their edit button, even if they posted anonymously */}
         <Link
           to={`/update-post/${post.id}`}
           className={`${user.id !== post.author.id && "hidden"}`}>

@@ -39,6 +39,7 @@ export const PostValidation = z.object({
   file: z.custom((files) => files && files.length > 0, "File is required"),
   location: z.string(),
   tags: z.string(),
+  is_anonymous: z.boolean().default(false).optional(),
 });
 
 export const ProfileValidation = z.object({

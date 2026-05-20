@@ -114,6 +114,15 @@ const PostDetails = () => {
     await postComment(commentInput);
   };
 
+  //Check if the post is anonymous
+  const isAnonymous = post?.is_anonymous;
+
+  //Set display values based on anonymity
+  const displayUsername = isAnonymous ? "Anonymous User" : post?.author?.username;
+  const displayImage = isAnonymous 
+    ? "/assets/icons/profile-placeholder.svg" 
+    : (post?.author?.profile_image || "/assets/icons/profile-placeholder.svg");
+
   return (
     <div className="post_details-container">
       <div className="hidden md:flex max-w-5xl w-full">
@@ -206,34 +215,57 @@ const PostDetails = () => {
           <div className="post_details-info flex flex-col justify-between">
             <div>
               <div className="flex-between w-full">
-                <Link
-                  to={`/profile/${post?.author.id}`}
-                  className="flex items-center gap-3">
-                  <img
-                    src={
-                      post?.author.profile_image ||
-                      "/assets/icons/profile-placeholder.svg"
-                    }
-                    alt="creator"
-                    className="w-8 h-8 lg:w-12 lg:h-12 rounded-full object-cover"
-                  />
-                  <div className="flex gap-1 flex-col">
-                    <p className="base-medium lg:body-bold text-light-1">
-                      {post?.author.username}
-                    </p>
-                    <div className="flex-center gap-2 text-light-3">
-                      <p className="subtle-semibold lg:small-regular ">
-                        {multiFormatDateString(post?.created_at)}
+                {/*If Anonymous, use a standard div. Otherwise, use a Link */}
+                {isAnonymous ? (
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={displayImage}
+                      alt="anonymous creator"
+                      className="w-8 h-8 lg:w-12 lg:h-12 rounded-full object-cover"
+                    />
+                    <div className="flex gap-1 flex-col">
+                      <p className="base-medium lg:body-bold text-light-1">
+                        {displayUsername}
                       </p>
-                      •
-                      <p className="subtle-semibold lg:small-regular">
-                        {post?.location}
-                      </p>
+                      <div className="flex-center gap-2 text-light-3">
+                        <p className="subtle-semibold lg:small-regular ">
+                          {multiFormatDateString(post?.created_at)}
+                        </p>
+                        •
+                        <p className="subtle-semibold lg:small-regular">
+                          {post?.location}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </Link>
+                ) : (
+                  <Link
+                    to={`/profile/${post?.author.id}`}
+                    className="flex items-center gap-3">
+                    <img
+                      src={displayImage}
+                      alt="creator"
+                      className="w-8 h-8 lg:w-12 lg:h-12 rounded-full object-cover"
+                    />
+                    <div className="flex gap-1 flex-col">
+                      <p className="base-medium lg:body-bold text-light-1">
+                        {displayUsername}
+                      </p>
+                      <div className="flex-center gap-2 text-light-3">
+                        <p className="subtle-semibold lg:small-regular ">
+                          {multiFormatDateString(post?.created_at)}
+                        </p>
+                        •
+                        <p className="subtle-semibold lg:small-regular">
+                          {post?.location}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                )}
 
                 <div className="flex-center gap-4">
+                  {/* The actual author can still see the edit button */}
                   <Link
                     to={`/update-post/${post?.id}`}
                     className={`${String(user.id) !== String(post?.author.id) && "hidden"}`}>
