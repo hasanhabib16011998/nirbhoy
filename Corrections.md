@@ -53,7 +53,7 @@
 4. Pro registration verification by admin(done)
 5. Anonymous post in front end layer (done)
 6. Lawyer profile admin panel e responding case count (done)
-7. Forget password with otp
-8. login using phone number instead of email
+7. Forget password with otp(done)
+8. login using phone number instead of email (done)
 
 

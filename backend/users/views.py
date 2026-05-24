@@ -34,6 +34,7 @@ class RegisterView(APIView):
                 "message": "Registration successful",
                 "user": {
                     "email": user.email,
+                    "phone_number": user.phone_number,
                     "role": role,
                     "is_verified": user.is_verified,
                     "username": user.username
@@ -74,7 +75,7 @@ class ProRegisterView(APIView):
             
             return Response({
                 "message": f"{role} application submitted successfully. Pending admin approval.",
-                "user": {"email": user.email, "role": role, "is_verified": False}
+                "user": {"email": user.email, "phone_number": user.phone_number, "role": role, "is_verified": False}
             }, status=status.HTTP_201_CREATED)
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
