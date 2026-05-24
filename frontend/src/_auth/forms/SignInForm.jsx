@@ -93,7 +93,13 @@ export default function SignInForm() {
 
         {/* Password Field */}
         <div className="space-y-2">
-          <label className="shad-form_label text-sm font-medium">Password</label>
+          <div className="flex justify-between items-center">
+            <label className="shad-form_label text-sm font-medium">Password</label>
+            {/* Forgot Password Link */}
+            <Link to="/forgot-password" className="text-primary-500 text-small-semibold hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
           <PasswordInput 
             className="shad-input" 
             {...register("password")} 

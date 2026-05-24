@@ -2,6 +2,7 @@ import AuthLayout from './_auth/AuthLayout';
 import SignInForm from './_auth/forms/SignInForm';
 import SignUpForm from './_auth/forms/SignUpForm';
 import ProSignUpForm from './_auth/forms/ProSignUpForm';
+import ForgotPassword from './_auth/forms/ForgotPassword';
 import {
   Home,
   Dashboard,
@@ -34,6 +35,7 @@ const App = () => {
             <Route path='/sign-in' element={<SignInForm/>}/>
             <Route path='/sign-up' element={<SignUpForm/>}/>
             <Route path='/pro-sign-up' element={<ProSignUpForm/>}/>
+            <Route path='/forgot-password' element={<ForgotPassword/>}/>
           </Route>
 
             {/* private routes */}

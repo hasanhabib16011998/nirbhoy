@@ -24,11 +24,11 @@ class RegisterView(APIView):
 
             #send OTP
             otp = str(random.randint(1000, 9999))
-            cache_key = f"otp:{user.email}"
+            cache_key = f"otp:{user.phone_number}"
             cache.set(cache_key, otp, timeout=300)
             
             # TODO: Integrate actual Email or SMS sending logic here
-            print(f"--- MOCK EMAIL --- Sent OTP {otp} to {user.email}")
+            print(f"--- MOCK SMS --- Sent OTP {otp} to {user.phone_number}")
             
             return Response({
                 "message": "Registration successful",
@@ -66,11 +66,11 @@ class ProRegisterView(APIView):
 
             #send OTP
             otp = str(random.randint(1000, 9999))
-            cache_key = f"otp:{user.email}"
+            cache_key = f"otp:{user.phone_number}"
             cache.set(cache_key, otp, timeout=300)
             
             # TODO: Integrate actual Email or SMS sending logic here
-            print(f"--- MOCK EMAIL --- Sent OTP {otp} to {user.email}")
+            print(f"--- MOCK SMS --- Sent OTP {otp} to {user.phone_number}")
             
             return Response({
                 "message": f"{role} application submitted successfully. Pending admin approval.",
@@ -89,17 +89,17 @@ class VerifyUserOTPView(APIView):
 
     def post(self, request):
         # Extract data sent from the React frontend
-        email = request.data.get('email')
+        phone_number = request.data.get('phone_number')
         submitted_otp = request.data.get('otp')
 
-        if not email or not submitted_otp:
+        if not phone_number or not submitted_otp:
             return Response(
-                {"message": "Email and OTP are required."}, 
+                {"message": "Phone number and OTP are required."}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # 1. Fetch the stored OTP from Redis using the same key format
-        cache_key = f"otp:{email}"
+        cache_key = f"otp:{phone_number}"
         stored_otp = cache.get(cache_key)
 
         # 2. Check if the OTP exists or has expired
@@ -113,7 +113,7 @@ class VerifyUserOTPView(APIView):
         if str(stored_otp) == str(submitted_otp):
             try:
                 # Find the user and update their verification status
-                user = User.objects.get(email=email)
+                user = User.objects.get(phone_number=phone_number)
                 user.is_verified = True
                 user.save()
 
@@ -170,6 +170,50 @@ class LoginView(APIView):
             return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        
+        if not phone_number:
+            return Response({"error": "Phone number is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if user exists
+        user = User.objects.filter(phone_number=phone_number).first()
+        if not user:
+            return Response({"error": "No account found with this phone number."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate and store OTP
+        otp = str(random.randint(1000, 9999))
+        cache_key = f"otp:{phone_number}" # Using phone_number for the cache key now!
+        cache.set(cache_key, otp, timeout=300)
+
+        # MOCK SMS LOGIC
+        print(f"--- MOCK SMS --- Sent OTP {otp} to {phone_number} for Password Reset")
+
+        return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
+    
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        new_password = request.data.get('new_password')
+
+        if not phone_number or not new_password:
+            return Response({"error": "Phone number and new password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(phone_number=phone_number).first()
+        if not user:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Set the new password
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
