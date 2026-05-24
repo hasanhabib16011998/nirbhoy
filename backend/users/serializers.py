@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import Group
 from .models import User, LawyerProfile, VolunteerProfile
-import random
-import string
 from posts.serializers import PostSerializer
 
 # Registration Serializer
@@ -11,19 +9,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number', 'is_anonymous_user']
+        fields = ['email', 'password', 'first_name', 'last_name', 'phone_number']
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        
-        # Handle Anonymous Username logic
-        if validated_data.get('is_anonymous_user', False):
-            suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
-            validated_data['username'] = f"user_{suffix}"
-            validated_data['first_name'] = "Anonymous"
-            validated_data['last_name'] = "User"
-        else:
-            validated_data['username'] = validated_data['email'].split('@')[0]
+        validated_data['username'] = validated_data['email'].split('@')[0]
 
         # Create normal user
         user = User(**validated_data)

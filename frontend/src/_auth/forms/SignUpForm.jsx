@@ -35,7 +35,6 @@ export default function SignUpForm() {
       phone_number: "",
       password: "",
       role: "Survivor",
-      is_anonymous_user: false,
     },
   });
 
@@ -168,29 +167,6 @@ export default function SignUpForm() {
                   {errors.password.message}
                 </p>
               )}
-            </div>
-
-            {/* Anonymous Checkbox */}
-            {/* We use <Controller /> here because the Checkbox is a custom Radix UI component, not a native HTML input */}
-            <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-dark-4 p-4 mt-2">
-              <Controller
-                name="is_anonymous_user"
-                control={control}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-              <div className="space-y-1 leading-none">
-                <label className="text-sm font-medium text-white">
-                  Stay Anonymous?
-                </label>
-                <p className="text-[0.8rem] text-light-3">
-                  We will hide your real name from your public profile.
-                </p>
-              </div>
             </div>
 
             <Button

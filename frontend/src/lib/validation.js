@@ -14,7 +14,6 @@ export const SignupValidation = z.object({
   .regex(/^\d+$/, { message: "Phone number can only contain numbers." }),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.string().default("Survivor"),
-  is_anonymous_user: z.boolean().default(false),
 });
 
 export const ProSignupValidation = z.object({

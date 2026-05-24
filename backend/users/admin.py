@@ -5,22 +5,27 @@ from django.utils.html import format_html
 
 class CustomUserAdmin(UserAdmin):
     model = User
+    ordering = ('-created_at',)
     
     # 1. Columns to show in the list
     # We use 'get_groups' to show the group name
-    list_display = ['email', 'username', 'get_groups', 'is_verified', 'is_anonymous_user', 'is_staff']
-    
+    list_display = ['email', 'username', 'get_groups', 'is_verified', 'is_staff', 'created_at']    
     # 2. Filters on the right sidebar
-    list_filter = ['groups', 'is_verified', 'is_staff', 'is_anonymous_user']
+    list_filter = ['groups', 'is_verified', 'is_staff', 'created_at']
     
     # 3. Search capability
     search_fields = ['email', 'username', 'phone_number']
+
+    readonly_fields = ('created_at', 'updated_at')
     
     # 4. Edit User Page Layout
     # This adds your custom fields to the edit form
     fieldsets = UserAdmin.fieldsets + (
         ('Nirbhoy Custom Fields', {
-            'fields': ('phone_number', 'profile_image', 'is_verified', 'is_anonymous_user', 'address'),
+            'fields': ('phone_number', 'profile_image', 'is_verified', 'address'),
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
         }),
     )
     
@@ -39,9 +44,9 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)
 
 class LawyerProfileAdmin(admin.ModelAdmin):
+    ordering = ('-created_at',)
     # Columns for the Lawyer table
-    list_display = ['get_user_name', 'bar_council_id', 'specialization','get_active_cases_count']
-    
+    list_display = ['get_user_name', 'bar_council_id', 'specialization', 'get_active_cases_count', 'created_at']    
     # Search by User's email or Bar ID
     search_fields = ['user__email', 'user__first_name', 'bar_council_id', 'specialization']
     
@@ -64,6 +69,7 @@ admin.site.register(LawyerProfile, LawyerProfileAdmin)
 
 @admin.register(VolunteerProfile)
 class VolunteerProfileAdmin(admin.ModelAdmin):
+    ordering = ('-created_at',)
     # What columns show up in the list view
     list_display = ('user', 'get_email', 'get_phone', 'is_user_verified')
     

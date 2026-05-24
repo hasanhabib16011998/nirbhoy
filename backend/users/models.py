@@ -10,7 +10,8 @@ class User(AbstractUser):
     address = models.TextField(blank=True, null=True)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)
-    is_anonymous_user = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'phone_number']
 
@@ -33,6 +34,8 @@ class LawyerProfile(models.Model):
         null=True, blank=True
     )
     specialization = models.CharField(max_length=100, default="General")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Advocate {self.user.last_name}"
@@ -44,6 +47,8 @@ class VolunteerProfile(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])],
          null=True, blank=True
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Volunteer {self.user.last_name}"
