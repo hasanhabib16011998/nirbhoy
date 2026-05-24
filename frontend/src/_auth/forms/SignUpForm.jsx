@@ -11,11 +11,10 @@ import { useCreateUserAccount } from "@/lib/react-query/queriesAndMutations";
 import { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios from 'axios';
+import OtpVerification from "./OtpVerification";
 
 export default function SignUpForm() {
   const [showOtp, setShowOtp] = useState(false);
-  const [otp, setOtp] = useState(["","","",""]);
-  const inputRefs = useRef([]);
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
 
@@ -27,7 +26,6 @@ export default function SignUpForm() {
     handleSubmit,
     control,
     formState: { errors },
-    reset,
   } = useForm({
     resolver: zodResolver(SignupValidation),
     defaultValues: {
@@ -41,42 +39,7 @@ export default function SignUpForm() {
     },
   });
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-
-  const verifyOtpMutation = useMutation({
-      mutationFn: async() => {
-          if(!userData) return;
-          const response = await axios.post(`${API_BASE_URL}/users/verify-user`,
-              { 
-                  ...userData,
-                  otp: otp.join(""),
-              }
-          );
-          return response.data;
-      },
-      onSuccess: () => {
-          navigate("/sign-in");
-      }
-    })
-
-    const handleOtpChange = (index, value) => {
-        if(!/^[0-9]?$/.test(value)) return;
-        const newOtp = [...otp];
-        newOtp[index] = value;
-        setOtp(newOtp);
-
-        if(value && index < inputRefs.current.length -1) {
-            inputRefs.current[index + 1]?.focus();
-        }
-
-    };
-
-    const handleOtpKeyDown = (index, e) => {
-        if(e.key === "Backspace" && !otp[index] && index>0){
-            inputRefs.current[index -1]?.focus();
-        }
-    };
 
   async function onSubmit(values) {
     try {
@@ -103,6 +66,11 @@ export default function SignUpForm() {
         description: errorMessage,
       });
     }
+  }
+
+  const handleOtpSuccess = () => {
+    toast.success("Account verified successfully", { description: "Please log in." });
+    navigate("/sign-in");
   }
 
   return (
@@ -261,42 +229,7 @@ export default function SignUpForm() {
           </form>
         </div>
       ) : (
-        <div>
-          <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">Enter OTP</h2>
-          <p className="text-light-3 small-medium md:base-regular">
-            An OTP has been sent to your email. Please enter that OTP to verify your account.
-          </p>
-          <div className="flex justify-center gap-6 mt-6">
-            {otp?.map((digit, index) => (
-              <input
-                key={index}
-                type="text"
-                ref={(el) => {
-                  if (el) inputRefs.current[index] = el;
-                }}
-                maxLength={1}
-                className="w-12 h-12 text-center border border-gray-300 outline-none !rounded-xl"
-                value={digit}
-                onChange={(e) => handleOtpChange(index, e.target.value)}
-                onKeyDown={(e) => handleOtpKeyDown(index, e)}
-              />
-            ))}
-          </div>
-          <button
-            type="submit"
-            disabled={false}
-            onClick={() => verifyOtpMutation.mutate()}
-            className="w-full mt-6 bg-[#3489ff] text-white p-3 rounded-md font-medium hover:bg-blue-600 transition-colors"
-          >
-            {verifyOtpMutation.isPending ? "Verifying..." : "Verify OTP"}
-          </button>
-          {verifyOtpMutation?.isError && (
-              <p className="text-red-500 text-sm mt-2">
-                {verifyOtpMutation.error.response?.data?.message ||
-                  verifyOtpMutation.error.message}
-              </p>
-            )}
-        </div>
+        <OtpVerification userData={userData} onSuccess={handleOtpSuccess} />
       )}
     </>
   );

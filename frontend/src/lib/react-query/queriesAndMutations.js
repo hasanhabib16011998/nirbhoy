@@ -9,6 +9,7 @@ import {
   createUserAccount,
   signInAccount,
   signOutAccount,
+  verifyUserOtp,
   createPost,
   getRecentPosts,
   getPostById,
@@ -50,6 +51,12 @@ export const useSignInAccount = () => {
 export const useSignOutAccount = () => {
   return useMutation({
     mutationFn: signOutAccount,
+  });
+};
+
+export const useVerifyOtp = () => {
+  return useMutation({
+    mutationFn: (verificationData) => verifyUserOtp(verificationData),
   });
 };
 

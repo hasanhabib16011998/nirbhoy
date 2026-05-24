@@ -39,9 +39,20 @@ class RegisterView(APIView):
                     "username": user.username
                 }
             }, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        
+        error_lists = list(serializer.errors.values())
+        
+        if error_lists and len(error_lists[0]) > 0:
+            clean_error_message = error_lists[0][0]
+        else:
+            clean_error_message = "Invalid data provided."
+
+        return Response(
+            {"message": clean_error_message}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
 class ProRegisterView(APIView):
     permission_classes = [AllowAny]
     # Tell Django to expect files in the request

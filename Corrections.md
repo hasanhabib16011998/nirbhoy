@@ -54,5 +54,6 @@
 5. Anonymous post in front end layer (done)
 6. Lawyer profile admin panel e responding case count (done)
 7. Forget password with otp
+8. login using phone number instead of email
 
 

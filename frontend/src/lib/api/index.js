@@ -19,8 +19,8 @@ export async function createUserAccount(user) {
     const data = await response.json();
 
     if (!response.ok) {
-      // If Django returns 400 or 500, we throw an error with the message
-      throw new Error(JSON.stringify(data));
+      const errorMessage = data.message || "Something went wrong. Please try again.";
+      throw new Error(errorMessage);
     }
 
     return data;
@@ -72,6 +72,16 @@ export async function signInAccount(user) {
     return data;
   } catch (error) {
     console.log("Login API Error:", error);
+    throw error;
+  }
+}
+
+export async function verifyUserOtp(verificationData) {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/users/verify-user`, verificationData);
+    return response.data;
+  } catch (error) {
+    console.error("OTP Verification Error:", error);
     throw error;
   }
 }
