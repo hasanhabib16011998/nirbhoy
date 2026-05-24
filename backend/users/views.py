@@ -144,13 +144,13 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data['email']
+            phone_number = serializer.validated_data['phone_number']
             password = serializer.validated_data['password']
 
             # Authenticate using email (since USERNAME_FIELD = 'email')
-            user = authenticate(request, username=email, password=password)
+            user = User.objects.filter(phone_number=phone_number).first()
 
-            if user is not None:
+            if user is not None and user.check_password(password):
                 # Generate JWT Tokens Manually
                 refresh = RefreshToken.for_user(user)
                 

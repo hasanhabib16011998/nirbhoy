@@ -25,7 +25,7 @@ export default function SignInForm() {
   } = useForm({
     resolver: zodResolver(SigninValidation),
     defaultValues: {
-      email: "",
+      phone_number: "",
       password: "",
     },
   });
@@ -78,16 +78,16 @@ export default function SignInForm() {
         className="flex flex-col gap-5 w-full mt-4"
       >
         
-        {/* Email Field */}
+        {/* ✅ Phone Number Field */}
         <div className="space-y-2">
-          <label className="shad-form_label text-sm font-medium">Email</label>
+          <label className="shad-form_label text-sm font-medium">Phone Number</label>
           <Input 
-            type="text" 
+            type="tel" 
             className="shad-input" 
-            {...register("email")} 
+            {...register("phone_number")} 
           />
-          {errors.email && (
-            <p className="text-[0.8rem] font-medium text-red">{errors.email.message}</p>
+          {errors.phone_number && (
+            <p className="text-[0.8rem] font-medium text-red">{errors.phone_number.message}</p>
           )}
         </div>
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const SigninValidation = z.object({
-  email: z.string().email("Invalid email address"),
+  phone_number: z.string().min(11, { message: "Phone number must be at least 11 digits." }),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 

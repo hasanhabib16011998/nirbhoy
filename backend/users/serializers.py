@@ -87,7 +87,7 @@ class ProRegistrationSerializer(serializers.ModelSerializer):
 
 # Login Serializer (Just for validating credentials)
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    phone_number = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
 class UserListSerializer(serializers.ModelSerializer):
