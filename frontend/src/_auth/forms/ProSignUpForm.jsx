@@ -119,9 +119,9 @@ return (
     <>
 
       {!showOtp ? (
-        <div className="registration-form w-full">
-          <h2 className="h3-bold md:h2-bold pt-5 text-center">Join as a Professional</h2>
-          <p className="text-light-3 small-medium md:base-regular text-center mb-6">
+        <div className="registration-form">
+          <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">Join as a Professional</h2>
+          <p className="text-light-3 small-medium md:base-regular">
             Help us make a difference. Your account will require admin verification.
           </p>
 
@@ -143,9 +143,9 @@ return (
             </Button>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 w-full">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full mt-4">
             {/* Common Fields */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex gap-4">
               <div className="w-full space-y-2">
                 <label className="text-sm font-medium text-white">First Name</label>
                 <Input {...register("first_name")} className="shad-input" />
