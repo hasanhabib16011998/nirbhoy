@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 
 class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
-    phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
+    phone_number = models.CharField(max_length=11, unique=True)
     address = models.TextField(blank=True, null=True)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)

@@ -80,10 +80,21 @@ WSGI_APPLICATION = 'nirbhoy.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'nirbhoy_db',
+        'USER': 'admin',
+        'PASSWORD': '8H27GO4GC722',
+        'HOST': '127.0.0.1',  # Use 'postgres' instead if you dockerize Django later
+        'PORT': '5432',
     }
 }
 
@@ -166,4 +177,4 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-BACKEND_URL = "http://192.168.0.106:8000"
+BACKEND_URL = "http://192.168.0.103:8000"
